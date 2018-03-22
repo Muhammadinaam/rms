@@ -5,7 +5,7 @@ namespace Illuminate\Support\Facades;
 use Psr\Log\LoggerInterface;
 
 /**
- * @see \Illuminate\Log\Logger
+ * @see \Illuminate\Log\Writer
  */
 class Log extends Facade
 {

@@ -1,7 +1,7 @@
 <?php
-class Issue2145Test extends PHPUnit\Framework\TestCase
+class Issue2145Test extends PHPUnit_Framework_TestCase
 {
-    public static function setUpBeforeClass(): void
+    public static function setUpBeforeClass()
     {
         throw new Exception;
     }

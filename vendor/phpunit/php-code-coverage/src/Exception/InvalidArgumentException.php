@@ -10,7 +10,7 @@
 
 namespace SebastianBergmann\CodeCoverage;
 
-final class InvalidArgumentException extends \InvalidArgumentException implements Exception
+class InvalidArgumentException extends \InvalidArgumentException implements Exception
 {
     /**
      * @param int    $argument
@@ -19,15 +19,15 @@ final class InvalidArgumentException extends \InvalidArgumentException implement
      *
      * @return InvalidArgumentException
      */
-    public static function create($argument, $type, $value = null): self
+    public static function create($argument, $type, $value = null)
     {
-        $stack = \debug_backtrace(0);
+        $stack = debug_backtrace(0);
 
         return new self(
-            \sprintf(
+            sprintf(
                 'Argument #%d%sof %s::%s() must be a %s',
                 $argument,
-                $value !== null ? ' (' . \gettype($value) . '#' . $value . ')' : ' (No Value) ',
+                $value !== null ? ' (' . gettype($value) . '#' . $value . ')' : ' (No Value) ',
                 $stack[1]['class'],
                 $stack[1]['function'],
                 $type

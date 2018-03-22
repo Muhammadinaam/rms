@@ -7,15 +7,8 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace PHPUnit\Runner\Filter;
 
-use FilterIterator;
-use InvalidArgumentException;
-use Iterator;
-use PHPUnit\Framework\TestSuite;
-use ReflectionClass;
-
-class Factory
+class PHPUnit_Runner_Filter_Factory
 {
     /**
      * @var array
@@ -25,14 +18,12 @@ class Factory
     /**
      * @param ReflectionClass $filter
      * @param mixed           $args
-     *
-     * @throws InvalidArgumentException
      */
-    public function addFilter(ReflectionClass $filter, $args): void
+    public function addFilter(ReflectionClass $filter, $args)
     {
-        if (!$filter->isSubclassOf(\RecursiveFilterIterator::class)) {
+        if (!$filter->isSubclassOf('RecursiveFilterIterator')) {
             throw new InvalidArgumentException(
-                \sprintf(
+                sprintf(
                     'Class "%s" does not extend RecursiveFilterIterator',
                     $filter->name
                 )
@@ -45,11 +36,11 @@ class Factory
     /**
      * @return FilterIterator
      */
-    public function factory(Iterator $iterator, TestSuite $suite): FilterIterator
+    public function factory(Iterator $iterator, PHPUnit_Framework_TestSuite $suite)
     {
         foreach ($this->filters as $filter) {
-            [$class, $args] = $filter;
-            $iterator       = $class->newInstance($iterator, $args, $suite);
+            list($class, $args) = $filter;
+            $iterator           = $class->newInstance($iterator, $args, $suite);
         }
 
         return $iterator;

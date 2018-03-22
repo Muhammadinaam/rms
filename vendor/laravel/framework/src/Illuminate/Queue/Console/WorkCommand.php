@@ -2,8 +2,8 @@
 
 namespace Illuminate\Queue\Console;
 
+use Carbon\Carbon;
 use Illuminate\Queue\Worker;
-use Illuminate\Support\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Queue\WorkerOptions;
@@ -62,7 +62,7 @@ class WorkCommand extends Command
      *
      * @return void
      */
-    public function handle()
+    public function fire()
     {
         if ($this->downForMaintenance() && $this->option('once')) {
             return $this->worker->sleep($this->option('sleep'));
@@ -168,9 +168,8 @@ class WorkCommand extends Command
     protected function writeStatus(Job $job, $status, $type)
     {
         $this->output->writeln(sprintf(
-            "<{$type}>[%s][%s] %s</{$type}> %s",
+            "<{$type}>[%s] %s</{$type}> %s",
             Carbon::now()->format('Y-m-d H:i:s'),
-            $job->getJobId(),
             str_pad("{$status}:", 11), $job->resolveName()
         ));
     }
@@ -178,7 +177,7 @@ class WorkCommand extends Command
     /**
      * Store a failed job event.
      *
-     * @param  \Illuminate\Queue\Events\JobFailed  $event
+     * @param  JobFailed  $event
      * @return void
      */
     protected function logFailedJob(JobFailed $event)

@@ -155,9 +155,7 @@ class Grammar extends BaseGrammar
         return collect($joins)->map(function ($join) use ($query) {
             $table = $this->wrapTable($join->table);
 
-            $nestedJoins = is_null($join->joins) ? '' : ' '.$this->compileJoins($query, $join->joins);
-
-            return trim("{$join->type} join {$table}{$nestedJoins} {$this->compileWheres($join)}");
+            return trim("{$join->type} join {$table} {$this->compileWheres($join)}");
         })->implode(' ');
     }
 
@@ -476,20 +474,6 @@ class Grammar extends BaseGrammar
     }
 
     /**
-     * Compile a where row values condition.
-     *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $where
-     * @return string
-     */
-    protected function whereRowValues(Builder $query, $where)
-    {
-        $values = $this->parameterize($where['values']);
-
-        return '('.implode(', ', $where['columns']).') '.$where['operator'].' ('.$values.')';
-    }
-
-    /**
      * Compile the "group by" portions of the query.
      *
      * @param  \Illuminate\Database\Query\Builder  $query
@@ -567,7 +551,7 @@ class Grammar extends BaseGrammar
     /**
      * Compile the query orders to an array.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  \Illuminate\Database\Query\Builder
      * @param  array  $orders
      * @return array
      */
@@ -757,10 +741,10 @@ class Grammar extends BaseGrammar
      */
     public function prepareBindingsForUpdate(array $bindings, array $values)
     {
-        $cleanBindings = Arr::except($bindings, ['join', 'select']);
+        $bindingsWithoutJoin = Arr::except($bindings, 'join');
 
         return array_values(
-            array_merge($bindings['join'], $values, Arr::flatten($cleanBindings))
+            array_merge($bindings['join'], $values, Arr::flatten($bindingsWithoutJoin))
         );
     }
 
@@ -775,17 +759,6 @@ class Grammar extends BaseGrammar
         $wheres = is_array($query->wheres) ? $this->compileWheres($query) : '';
 
         return trim("delete from {$this->wrapTable($query->from)} $wheres");
-    }
-
-    /**
-     * Prepare the bindings for a delete statement.
-     *
-     * @param  array  $bindings
-     * @return array
-     */
-    public function prepareBindingsForDelete(array $bindings)
-    {
-        return Arr::flatten($bindings);
     }
 
     /**

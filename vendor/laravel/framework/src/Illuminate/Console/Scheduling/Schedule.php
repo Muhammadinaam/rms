@@ -2,11 +2,9 @@
 
 namespace Illuminate\Console\Scheduling;
 
-use DateTimeInterface;
 use Illuminate\Console\Application;
 use Illuminate\Container\Container;
-use Illuminate\Support\ProcessUtils;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Symfony\Component\Process\ProcessUtils;
 
 class Schedule
 {
@@ -18,18 +16,11 @@ class Schedule
     protected $events = [];
 
     /**
-     * The event mutex implementation.
+     * The mutex implementation.
      *
-     * @var \Illuminate\Console\Scheduling\EventMutex
+     * @var \Illuminate\Console\Scheduling\Mutex
      */
-    protected $eventMutex;
-
-    /**
-     * The scheduling mutex implementation.
-     *
-     * @var \Illuminate\Console\Scheduling\SchedulingMutex
-     */
-    protected $schedulingMutex;
+    protected $mutex;
 
     /**
      * Create a new schedule instance.
@@ -40,13 +31,9 @@ class Schedule
     {
         $container = Container::getInstance();
 
-        $this->eventMutex = $container->bound(EventMutex::class)
-                                ? $container->make(EventMutex::class)
-                                : $container->make(CacheEventMutex::class);
-
-        $this->schedulingMutex = $container->bound(SchedulingMutex::class)
-                                ? $container->make(SchedulingMutex::class)
-                                : $container->make(CacheSchedulingMutex::class);
+        $this->mutex = $container->bound(Mutex::class)
+                                ? $container->make(Mutex::class)
+                                : $container->make(CacheMutex::class);
     }
 
     /**
@@ -59,7 +46,7 @@ class Schedule
     public function call($callback, array $parameters = [])
     {
         $this->events[] = $event = new CallbackEvent(
-            $this->eventMutex, $callback, $parameters
+            $this->mutex, $callback, $parameters
         );
 
         return $event;
@@ -87,19 +74,12 @@ class Schedule
      * Add a new job callback event to the schedule.
      *
      * @param  object|string  $job
-     * @param  string|null  $queue
      * @return \Illuminate\Console\Scheduling\CallbackEvent
      */
-    public function job($job, $queue = null)
+    public function job($job)
     {
-        return $this->call(function () use ($job, $queue) {
-            $job = is_string($job) ? resolve($job) : $job;
-
-            if ($job instanceof ShouldQueue) {
-                dispatch($job)->onQueue($queue);
-            } else {
-                dispatch_now($job);
-            }
+        return $this->call(function () use ($job) {
+            dispatch(is_string($job) ? resolve($job) : $job);
         })->name(is_string($job) ? $job : get_class($job));
     }
 
@@ -116,7 +96,7 @@ class Schedule
             $command .= ' '.$this->compileParameters($parameters);
         }
 
-        $this->events[] = $event = new Event($this->eventMutex, $command);
+        $this->events[] = $event = new Event($this->mutex, $command);
 
         return $event;
     }
@@ -143,22 +123,10 @@ class Schedule
     }
 
     /**
-     * Determine if the server is allowed to run this event.
-     *
-     * @param  \Illuminate\Console\Scheduling\Event  $event
-     * @param  \DateTimeInterface  $time
-     * @return bool
-     */
-    public function serverShouldRun(Event $event, DateTimeInterface $time)
-    {
-        return $this->schedulingMutex->create($event, $time);
-    }
-
-    /**
      * Get all of the events on the schedule that are due.
      *
      * @param  \Illuminate\Contracts\Foundation\Application  $app
-     * @return \Illuminate\Support\Collection
+     * @return array
      */
     public function dueEvents($app)
     {
@@ -173,24 +141,5 @@ class Schedule
     public function events()
     {
         return $this->events;
-    }
-
-    /**
-     * Specify the cache store that should be used to store mutexes.
-     *
-     * @param  string  $store
-     * @return $this
-     */
-    public function useCache($store)
-    {
-        if ($this->eventMutex instanceof CacheEventMutex) {
-            $this->eventMutex->useStore($store);
-        }
-
-        if ($this->schedulingMutex instanceof CacheSchedulingMutex) {
-            $this->schedulingMutex->useStore($store);
-        }
-
-        return $this;
     }
 }

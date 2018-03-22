@@ -9,13 +9,12 @@ $_SERVER['argv'][4] = 'BankAccountTest';
 $_SERVER['argv'][5] = __DIR__ . '/../_files/BankAccountTest.php';
 
 require __DIR__ . '/../bootstrap.php';
-PHPUnit\TextUI\Command::main();
+PHPUnit_TextUI_Command::main();
 --EXPECTF--
 PHPUnit %s by Sebastian Bergmann and contributors.
 
 BankAccount
 ...                                                                 3 / 3 (100%) [x] Balance is initially zero
- [x] Balance cannot become negative
  [x] Balance cannot become negative
 
 

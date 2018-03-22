@@ -56,15 +56,19 @@ interface KernelInterface extends HttpKernelInterface, \Serializable
     public function getBundles();
 
     /**
-     * Returns a bundle.
+     * Returns a bundle and optionally its descendants by its name.
      *
-     * @param string $name Bundle name
+     * The second argument is deprecated as of 3.4 and will be removed in 4.0. This method
+     * will always return an instance of BundleInterface in 4.0.
      *
-     * @return BundleInterface A BundleInterface instance
+     * @param string $name  Bundle name
+     * @param bool   $first Whether to return the first bundle only or together with its descendants
+     *
+     * @return BundleInterface|BundleInterface[] A BundleInterface instance or an array of BundleInterface instances if $first is false
      *
      * @throws \InvalidArgumentException when the bundle is not enabled
      */
-    public function getBundle($name);
+    public function getBundle($name, $first = true);
 
     /**
      * Returns the file path for a given resource.

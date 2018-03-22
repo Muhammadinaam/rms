@@ -8,23 +8,14 @@
  * file that was distributed with this source code.
  */
 
-namespace PHPUnit\Framework\Constraint;
-
-class IsJsonTest extends ConstraintTestCase
+class Framework_Constraint_IsJsonTest extends PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider evaluateDataprovider
-     *
-     * @param mixed $expected
-     * @param mixed $jsonOther
-     *
-     * @throws \PHPUnit\Framework\ExpectationFailedException
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
-    public function testEvaluate($expected, $jsonOther): void
+    public function testEvaluate($expected, $jsonOther)
     {
-        $constraint = new IsJson;
-
+        $constraint = new PHPUnit_Framework_Constraint_IsJson();
         $this->assertEquals($expected, $constraint->evaluate($jsonOther, '', true));
     }
 

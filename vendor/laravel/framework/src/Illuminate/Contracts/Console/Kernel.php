@@ -18,10 +18,9 @@ interface Kernel
      *
      * @param  string  $command
      * @param  array  $parameters
-     * @param  \Symfony\Component\Console\Output\OutputInterface  $outputBuffer
      * @return int
      */
-    public function call($command, array $parameters = [], $outputBuffer = null);
+    public function call($command, array $parameters = []);
 
     /**
      * Queue an Artisan console command by name.

@@ -8,22 +8,11 @@ use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 class BcryptHasher implements HasherContract
 {
     /**
-     * The default cost factor.
+     * Default crypt cost factor.
      *
      * @var int
      */
     protected $rounds = 10;
-
-    /**
-     * Get information about the given hashed value.
-     *
-     * @param  string  $hashedValue
-     * @return array
-     */
-    public function info($hashedValue)
-    {
-        return password_get_info($hashedValue);
-    }
 
     /**
      * Hash the given value.
@@ -99,6 +88,6 @@ class BcryptHasher implements HasherContract
      */
     protected function cost(array $options = [])
     {
-        return $options['rounds'] ?? $this->rounds;
+        return isset($options['rounds']) ? $options['rounds'] : $this->rounds;
     }
 }
