@@ -13,6 +13,31 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+
+
+Route::group(['middleware'=>['auth:api']], function(){
+
+    Route::post('get-logged-in-user-info', 'UsersController@getLoggedInUserInfo');
+
+    Route::get('get-menus', 'UsersController@getMenus');
+    Route::get('get-permissions', 'UsersController@getPermissions');
+    Route::get('has-permission', 'UsersController@hasPermission');
+
+
+    Route::get('users', 'UsersController@index');
+    Route::get('users/{id}/edit', 'UsersController@edit');
+    Route::post('users', 'UsersController@store');
+    Route::put('users/{id}', 'UsersController@update');
+
+    Route::get('get-portions', 'TablesController@getPortions');
+    Route::get('tables', 'TablesController@index');
+    Route::get('tables/{id}/edit', 'TablesController@edit');
+    Route::post('tables', 'TablesController@store');
+    Route::put('tables/{id}', 'TablesController@update');
+
+    Route::get('items', 'ItemsController@index');
+    Route::get('items/{id}/edit', 'ItemsController@edit');
+    Route::post('items', 'ItemsController@store');
+    Route::put('items/{id}', 'ItemsController@update');
+
 });
