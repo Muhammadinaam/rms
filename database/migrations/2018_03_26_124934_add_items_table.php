@@ -21,6 +21,7 @@ class AddItemsTable extends Migration
             $table->string('uid');
 
             $table->string('code');
+            $table->string('category');
             $table->string('name');
             $table->string('unit');
             $table->decimal('price',20, 2);

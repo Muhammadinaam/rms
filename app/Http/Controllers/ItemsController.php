@@ -13,7 +13,7 @@ class ItemsController extends Controller
 
     public function index()
     {
-    	$items = Item::orderBy('code')->get();
+    	$items = Item::orderBy('code')->orderBy('category')->get();
     	return $items;
     }
 
@@ -64,6 +64,7 @@ class ItemsController extends Controller
             DB::beginTransaction();
             
 
+            $item->category = request()->category;
             $item->name = request()->name;
             $item->code = request()->code;
             $item->unit = request()->unit;
