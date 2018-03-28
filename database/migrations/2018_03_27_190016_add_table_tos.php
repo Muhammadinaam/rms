@@ -19,6 +19,7 @@ class AddTableTos extends Migration
             
             $table->integer('order_type_id');
             $table->datetime('order_datetime');
+            $table->datetime('served_datetime');
             $table->bigInteger('table_id');
             $table->string('deliver_to_name');
             $table->string('deliver_to_phone');

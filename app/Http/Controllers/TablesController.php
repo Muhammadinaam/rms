@@ -84,4 +84,9 @@ class TablesController extends Controller
             return ['success' => false, 'message' => 'Some error occured. Error: ' . $ex->getMessage()];
         }
     }
+
+    public function freeTables()
+    {
+        return Table::where('is_free', 1)->orderBy('portion')->get();
+    }
 }
