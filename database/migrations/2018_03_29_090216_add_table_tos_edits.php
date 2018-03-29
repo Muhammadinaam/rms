@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddTableTosDetails extends Migration
+class AddTableTosEdits extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,15 @@ class AddTableTosDetails extends Migration
      */
     public function up()
     {
-        Schema::create('tos_details', function (Blueprint $table) {
-            
+        //
+        Schema::create('tos_edits', function (Blueprint $table) {
             $table->bigIncrements('id');
+
             $table->bigInteger('to_id');
-            $table->bigInteger('item_id');
-            $table->decimal('qty',10,3);
-            $table->decimal('rate',10,2);
-            $table->decimal('amount',25,5);
-            
+            $table->boolean('is_table_changed')->nullable();
+            $table->bigInteger('new_table_id')->nullable();
+
+            $table->timestamps();
         });
     }
 
@@ -32,6 +32,7 @@ class AddTableTosDetails extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tos_details');
+        //
+        Schema::dropIfExists('tos_edits');
     }
 }

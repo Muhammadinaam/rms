@@ -43,5 +43,8 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::put('items/{id}', 'ItemsController@update');
 
     Route::get('order_types', 'OrdersController@orderTypes');
+    Route::get('orders/{id}/edit', 'OrdersController@edit');
+    Route::post('orders', 'OrdersController@store');
+    Route::put('orders/{id}', 'OrdersController@update');
 
 });
