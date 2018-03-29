@@ -58,13 +58,6 @@ class OrdersController extends Controller
             {
                 $order_data['table_id'] = $order['table'];
                 
-                // add link of this order to table
-                DB::table('tables')
-                    ->where('id', $order_data['table_id'])
-                    ->update([
-                        'current_order_id' => $id,
-                    ]);
-
 
                 $order_data['deliver_to_name'] = null;
                 $order_data['deliver_to_phone'] = null;
@@ -96,6 +89,19 @@ class OrdersController extends Controller
                         ->where('id', $id)
                         ->update($order_data);
             }
+
+
+            
+            // add link of this order to table
+            if($order_data['order_type_id'] == 1)
+            {
+                DB::table('tables')
+                    ->where('id', $order_data['table_id'])
+                    ->update([
+                        'current_order_id' => $id,
+                    ]);
+            }
+            
 
 
 

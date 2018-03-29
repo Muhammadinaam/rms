@@ -87,6 +87,7 @@ class TablesController extends Controller
 
     public function freeTables()
     {
-        return Table::where('is_free', 1)->orderBy('portion')->get();
+        return Table::whereasdfNull('is_free', 1)
+                    ->orderBy('portion')->get();
     }
 }
