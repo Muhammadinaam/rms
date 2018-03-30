@@ -60,7 +60,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,7 +69,7 @@ CREATE TABLE `migrations` (
 
 LOCK TABLES `migrations` WRITE;
 /*!40000 ALTER TABLE `migrations` DISABLE KEYS */;
-INSERT INTO `migrations` VALUES (1,'2014_10_12_000000_create_users_table',1),(2,'2014_10_12_100000_create_password_resets_table',1),(3,'2016_06_01_000001_create_oauth_auth_codes_table',2),(4,'2016_06_01_000002_create_oauth_access_tokens_table',2),(5,'2016_06_01_000003_create_oauth_refresh_tokens_table',2),(6,'2016_06_01_000004_create_oauth_clients_table',2),(7,'2016_06_01_000005_create_oauth_personal_access_clients_table',2),(9,'2018_03_24_175327_add_columns_in_users_table',3),(10,'2018_03_24_181904_add_table_user_permissions',3),(11,'2018_03_25_153131_add_table_permissions',4),(12,'2018_03_26_110147_add_table_tables',5),(13,'2018_03_26_124934_add_items_table',6),(15,'2018_03_27_190016_add_table_tos',7),(16,'2018_03_28_075100_add_table_order_types',8),(17,'2018_03_28_075316_add_table_order_statuses',9),(18,'2018_03_28_080010_add_table_tos_details',10),(21,'2018_03_28_110820_add_column_is_free_in_tables_table',11),(22,'2018_03_29_090216_add_table_tos_edits',12),(23,'2018_03_29_090230_add_table_tos_edits_details',12);
+INSERT INTO `migrations` VALUES (1,'2014_10_12_000000_create_users_table',1),(2,'2014_10_12_100000_create_password_resets_table',1),(3,'2016_06_01_000001_create_oauth_auth_codes_table',2),(4,'2016_06_01_000002_create_oauth_access_tokens_table',2),(5,'2016_06_01_000003_create_oauth_refresh_tokens_table',2),(6,'2016_06_01_000004_create_oauth_clients_table',2),(7,'2016_06_01_000005_create_oauth_personal_access_clients_table',2),(9,'2018_03_24_175327_add_columns_in_users_table',3),(10,'2018_03_24_181904_add_table_user_permissions',3),(11,'2018_03_25_153131_add_table_permissions',4),(12,'2018_03_26_110147_add_table_tables',5),(13,'2018_03_26_124934_add_items_table',6),(15,'2018_03_27_190016_add_table_tos',7),(16,'2018_03_28_075100_add_table_order_types',8),(17,'2018_03_28_075316_add_table_order_statuses',9),(18,'2018_03_28_080010_add_table_tos_details',10),(21,'2018_03_28_110820_add_column_is_free_in_tables_table',11),(22,'2018_03_29_090216_add_table_tos_edits',12),(23,'2018_03_29_090230_add_table_tos_edits_details',12),(25,'2018_03_29_193700_remove_is_free_column_from_tables_table',13),(26,'2018_03_30_123548_add_table_print_jobs',14);
 /*!40000 ALTER TABLE `migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -325,6 +325,35 @@ INSERT INTO `permissions` VALUES (1,'Users Management','View Users List','view-u
 UNLOCK TABLES;
 
 --
+-- Table structure for table `print_jobs`
+--
+
+DROP TABLE IF EXISTS `print_jobs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `print_jobs` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `print_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `is_reprint` tinyint(1) NOT NULL,
+  `executed_at` datetime NOT NULL,
+  `error` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `print_jobs`
+--
+
+LOCK TABLES `print_jobs` WRITE;
+/*!40000 ALTER TABLE `print_jobs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `print_jobs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `tables`
 --
 
@@ -338,7 +367,6 @@ CREATE TABLE `tables` (
   `reserved_time_start` datetime DEFAULT NULL,
   `reserved_time_end` datetime DEFAULT NULL,
   `current_order_id` bigint(20) DEFAULT NULL,
-  `is_free` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -351,7 +379,7 @@ CREATE TABLE `tables` (
 
 LOCK TABLES `tables` WRITE;
 /*!40000 ALTER TABLE `tables` DISABLE KEYS */;
-INSERT INTO `tables` VALUES (1,'Floor 1','1',NULL,NULL,NULL,1,NULL,'2018-03-26 07:44:41'),(2,'Floor 2','2',NULL,NULL,NULL,1,NULL,NULL),(3,'Floor 2','3',NULL,NULL,NULL,1,'2018-03-26 07:44:10','2018-03-26 07:44:22'),(4,'Floor 1','2',NULL,NULL,NULL,1,'2018-03-26 07:46:40','2018-03-26 07:46:40');
+INSERT INTO `tables` VALUES (1,'Floor 1','1',NULL,NULL,11,NULL,'2018-03-26 07:44:41'),(2,'Floor 2','2',NULL,NULL,NULL,NULL,NULL),(3,'Floor 2','3',NULL,NULL,NULL,'2018-03-26 07:44:10','2018-03-26 07:44:22'),(4,'Floor 1','2',NULL,NULL,NULL,'2018-03-26 07:46:40','2018-03-26 07:46:40');
 /*!40000 ALTER TABLE `tables` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -375,7 +403,7 @@ CREATE TABLE `tos` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -384,7 +412,7 @@ CREATE TABLE `tos` (
 
 LOCK TABLES `tos` WRITE;
 /*!40000 ALTER TABLE `tos` DISABLE KEYS */;
-INSERT INTO `tos` VALUES (5,1,'2018-03-29 10:42:13',NULL,1,NULL,NULL,NULL,1,NULL,NULL),(6,1,'2018-03-29 10:46:35',NULL,1,NULL,NULL,NULL,1,NULL,NULL),(7,1,'2018-03-29 10:47:48',NULL,1,NULL,NULL,NULL,1,NULL,NULL),(8,1,'2018-03-29 11:05:45',NULL,1,NULL,NULL,NULL,1,NULL,NULL),(9,1,'2018-03-29 11:11:02',NULL,1,NULL,NULL,NULL,1,NULL,NULL),(10,1,'2018-03-29 11:12:28',NULL,1,NULL,NULL,NULL,1,NULL,NULL);
+INSERT INTO `tos` VALUES (11,1,'2018-03-30 12:30:29',NULL,1,NULL,NULL,NULL,1,NULL,NULL);
 /*!40000 ALTER TABLE `tos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -403,7 +431,7 @@ CREATE TABLE `tos_details` (
   `rate` decimal(10,2) NOT NULL,
   `amount` decimal(25,5) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -412,7 +440,7 @@ CREATE TABLE `tos_details` (
 
 LOCK TABLES `tos_details` WRITE;
 /*!40000 ALTER TABLE `tos_details` DISABLE KEYS */;
-INSERT INTO `tos_details` VALUES (9,7,2,2.000,500.00,1000.00000),(10,7,1,2.000,700.00,1400.00000),(11,7,2,2.000,500.00,1000.00000),(12,7,1,2.000,700.00,1400.00000),(13,8,1,1.000,700.00,700.00000),(14,8,1,1.000,700.00,700.00000),(15,8,1,1.000,700.00,700.00000),(16,8,1,1.000,700.00,700.00000),(17,9,1,1.000,700.00,700.00000),(18,10,2,1.000,500.00,500.00000);
+INSERT INTO `tos_details` VALUES (19,11,1,1.000,700.00,700.00000);
 /*!40000 ALTER TABLE `tos_details` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -541,4 +569,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-29 16:43:03
+-- Dump completed on 2018-03-30 18:04:07
