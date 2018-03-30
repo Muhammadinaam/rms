@@ -15,6 +15,8 @@ class AddTableTos extends Migration
     {
         Schema::create('tos', function (Blueprint $table) {
             
+            $table->engine = 'InnoDB';
+
             $table->bigIncrements('id');
             
             $table->integer('order_type_id');

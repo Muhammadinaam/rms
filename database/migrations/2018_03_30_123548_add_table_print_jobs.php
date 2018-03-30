@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddTableTosDetails extends Migration
+class AddTablePrintJobs extends Migration
 {
     /**
      * Run the migrations.
@@ -13,17 +13,17 @@ class AddTableTosDetails extends Migration
      */
     public function up()
     {
-        Schema::create('tos_details', function (Blueprint $table) {
-
+        Schema::create('print_jobs', function (Blueprint $table) {
             $table->engine = 'InnoDB';
-            
             $table->bigIncrements('id');
-            $table->bigInteger('to_id');
-            $table->bigInteger('item_id');
-            $table->decimal('qty',10,3);
-            $table->decimal('rate',10,2);
-            $table->decimal('amount',25,5);
+
+            $table->string('print_type');
+            $table->bigInteger('entity_id');
+            $table->boolean('is_reprint');
+            $table->datetime('executed_at');
+            $table->text('error');
             
+            $table->timestamps();
         });
     }
 
@@ -34,6 +34,6 @@ class AddTableTosDetails extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tos_details');
+        Schema::dropIfExists('print_jobs');
     }
 }

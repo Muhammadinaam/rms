@@ -47,4 +47,6 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::post('orders', 'OrdersController@store');
     Route::put('orders/{id}', 'OrdersController@update');
 
+    Route::get('open-orders', 'OrdersController@openOrders');
+
 });

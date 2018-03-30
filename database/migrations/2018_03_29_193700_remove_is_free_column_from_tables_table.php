@@ -15,6 +15,7 @@ class RemoveIsFreeColumnFromTablesTable extends Migration
     {
         Schema::table('tables', function (Blueprint $table) {
             //
+            $table->dropColumn(['is_free']);
         });
     }
 
@@ -27,6 +28,7 @@ class RemoveIsFreeColumnFromTablesTable extends Migration
     {
         Schema::table('tables', function (Blueprint $table) {
             //
+            $table->boolean('is_free')->nullable();
         });
     }
 }

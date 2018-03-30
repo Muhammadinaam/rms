@@ -180,4 +180,13 @@ class OrdersController extends Controller
             return ['success' => false, 'message' => 'Order was not saved. Error: ' . $ex->getMessage()];
         }
     }
+
+    public function openOrders()
+    {
+        return DB::table('tos')
+                    ->join('order_statuses', 'order_statuses.id', '=', 'tos.order_status_id')
+                    ->join('order_types', 'order_types.id', '=', 'tos.order_type_id')
+                    ->select('tos.*', )
+                    ->where()
+    }
 }

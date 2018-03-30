@@ -15,6 +15,8 @@ class AddTableTosEditsDetails extends Migration
     {
         //
         Schema::create('tos_edits_details', function (Blueprint $table) {
+
+            $table->engine = 'InnoDB';
             $table->bigIncrements('id');
 
             $table->bigInteger('to_edit_id');

@@ -15,6 +15,9 @@ class AddTableTosEdits extends Migration
     {
         //
         Schema::create('tos_edits', function (Blueprint $table) {
+
+            $table->engine = 'InnoDB';
+            
             $table->bigIncrements('id');
 
             $table->bigInteger('to_id');

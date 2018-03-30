@@ -87,7 +87,15 @@ class TablesController extends Controller
 
     public function freeTables()
     {
-        return Table::whereasdfNull('is_free', 1)
-                    ->orderBy('portion')->get();
+        return Table::whereNull('current_order_id')
+                    ->where(function($query){
+                        $query->whereNull('reserved_time_start')
+                            ->orWhere(function($query){
+                                $query->where( 'reserved_time_start', '>=' , \Carbon\Carbon::now()->addMinutes(60)->format('Y-m-d H:i:s') )
+                                    ->orWhere( 'reserved_time_end', '<', \Carbon\Carbon::now()->format('Y-m-d H:i:s') );
+                            });
+                    })
+                    ->orderBy('portion')
+                    ->get();
     }
 }
