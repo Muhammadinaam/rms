@@ -15,6 +15,12 @@ class UsersController extends Controller
 
     public $all_menus = [
         [
+            'name' => 'Settings',
+            'icon' => 'fa fa-gears',
+            'url' => 'settings',
+            'permission' => 'change_settings',
+        ],
+        [
             'name' => 'Users', 
             'icon' => 'fa fa-users', 
             'children' => [

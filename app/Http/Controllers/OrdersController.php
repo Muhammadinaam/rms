@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use DB;
+use Auth;
 
 class OrdersController extends Controller
 {
@@ -19,11 +20,52 @@ class OrdersController extends Controller
     public function store()
     {
 
+
         $order = json_decode( request()->order, true );
         $order_details = $order['order_details'];
         $deleted_details = json_decode( request()->deleted_details, true );
 
         return $this->saveOrder($order, $order_details, $deleted_details);
+    }
+
+    public function update($id)
+    {
+
+        $order = json_decode( request()->order, true );
+        $order_details = $order['order_details'];
+        $deleted_details = json_decode( request()->deleted_details, true );
+
+        return $this->saveOrder($order, $order_details, $deleted_details);
+    }
+
+    public function edit($id)
+    {
+        $order = DB::table('tos')
+                    ->where('tos.id', $id)
+                    ->select('tos.id', 
+                        'tos.order_type_id as order_type',
+                        'tos.table_id as table',
+                        'tables.name as table_name',
+                        'tables.portion as table_portion',
+                        'tos.deliver_to_name',
+                        'tos.deliver_to_phone',
+                        'tos.deliver_to_address'
+                    )
+                    ->leftJoin('tables', 'tables.id', '=', 'tos.table_id')
+                    ->first();
+
+        $order->order_details = DB::table('tos_details')
+                                ->where('to_id', $id)
+                                ->select('tos_details.id as detail_id',
+                                    'tos_details.item_id',
+                                    'items.name as item_name',
+                                    'tos_details.qty',
+                                    'tos_details.rate'
+                                )
+                                ->join('items', 'items.id', '=', 'tos_details.item_id')
+                                ->get();
+
+        return json_encode($order);
     }
 
     public function saveOrder($order, $order_details, $deleted_details)
@@ -69,6 +111,10 @@ class OrdersController extends Controller
                 $order_data['deliver_to_phone'] = $order['deliver_to_phone'];
                 $order_data['deliver_to_address'] = $order['deliver_to_address'];
             }
+
+            $order_data['order_amount_ex_st'] = $order['order_amount_ex_st'];
+            $order_data['sales_tax'] = $order['sales_tax'];
+            $order_data['order_amount_inc_st'] = $order['order_amount_inc_st'];
 
             if( $is_new_order )
             {
@@ -121,7 +167,7 @@ class OrdersController extends Controller
                         DB::table('tos_edits_details')
                             ->insert([
                                 'to_edit_id' => $tos_edit_id,
-                                'edit_type' => 'item_deleted',
+                                'edit_type' => 'Items Deleted',
                                 'item_id' => $deleted_detail['item_id'],
                                 'qty' => $deleted_detail['qty'],
                                 'rate' => $deleted_detail['rate'],
@@ -157,7 +203,7 @@ class OrdersController extends Controller
                         DB::table('tos_edits_details')
                             ->insert([
                                 'to_edit_id' => $tos_edit_id,
-                                'edit_type' => 'item_added',
+                                'edit_type' => 'Items Added',
                                 'item_id' => $order_detail['item_id'],
                                 'qty' => $order_detail['qty'],
                                 'rate' => $order_detail['rate'],
@@ -169,6 +215,14 @@ class OrdersController extends Controller
 
 
             
+            if($is_new_order)
+            {
+                $this->insertPrintJob('New Order', $id, false);
+            }
+            else
+            {
+                $this->insertPrintJob('Edit Order', $tos_edit_id, false);
+            }
 
 
             DB::commit();
@@ -186,7 +240,114 @@ class OrdersController extends Controller
         return DB::table('tos')
                     ->join('order_statuses', 'order_statuses.id', '=', 'tos.order_status_id')
                     ->join('order_types', 'order_types.id', '=', 'tos.order_type_id')
-                    ->select('tos.*', )
-                    ->where()
+                    ->leftJoin('tables', 'tables.id', '=', 'tos.table_id')
+                    ->select('tos.*', 
+                        'order_types.name as order_type', 
+                        'order_statuses.name as order_status', 'order_statuses.slug as order_status_slug',
+                        'tables.portion as portion', 'tables.name as table_name',
+                        DB::raw('TIMESTAMPDIFF(MINUTE,tos.order_datetime,NOW()) as elapsed_minutes')
+                    )
+                    ->whereNotIn('order_statuses.slug', ['closed','cancelled'])
+                    ->get();
+    }
+
+    public function changeOrderStatusApi()
+    {
+        $order_id = request()->order_id;
+        $status = request()->status;
+
+        return $this->changeOrderStatus($order_id, $status);
+    }
+
+    public function changeOrderStatus($order_id, $status)
+    {
+        try {
+
+            DB::beginTransaction();
+
+            $order_data = [
+                'order_status_id' => $status
+            ];
+
+            if($status == 2)
+            {
+                $order_data['served_datetime'] = \Carbon\Carbon::now()->format('Y-m-d H:i:s');
+            }
+            else if($status == 1)
+            {
+                $order_data['served_datetime'] = null;
+            }
+
+            DB::table('tos')
+                ->where('id', $order_id)
+                ->update($order_data);
+
+
+
+            if($status == 3 || $status == 4)
+            {
+                DB::table('tables')
+                    ->where('current_order_id', $order_id)
+                    ->update(['current_order_id' => null]);
+            }
+
+
+
+            DB::commit();
+
+            return ['success' => true, 'message' => 'Status Changed Successfully'];
+            
+        } catch (\Exception $e) {
+            
+            DB::rollBack();
+            return ['success' => false, 'message' => 'Error Occurred: ' . $e->getMessage()];
+        }
+
+        
+    }
+
+    public function closeOrder()
+    {
+        $order_id = request()->order_id;
+        $received_through = request()->received_through;
+
+
+
+        try {
+            DB::beginTransaction();
+
+            DB::table('tos')
+                ->where('id', $order_id)
+                ->update([
+                    'received_through' => $received_through,
+                    'received_by' => Auth::user()->id,
+                    'received_at' => \Carbon\Carbon::now()->format('Y-m-d H:i:s'),
+                ]);
+
+
+            $close_order_result = $this->changeOrderStatus($order_id, 4);
+
+            if($close_order_result['success'] == false)
+                throw new \Exception( $close_order_result['message'], 1);
+                
+
+
+            DB::commit();
+            return ['success' => true, 'message' => 'Order Closed Successfully'];
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ['success' => false, 'message' => 'Error Occurred: ' . $e->getMessage()];
+        }
+    }
+
+    public function insertPrintJob($print_type, $entity_id, $is_reprint)
+    {
+        DB::table('print_jobs')
+            ->insert([
+                'print_type' => $print_type,
+                'entity_id' => $entity_id,
+                'is_reprint' => $is_reprint,
+            ]);
     }
 }

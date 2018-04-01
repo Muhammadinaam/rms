@@ -46,7 +46,14 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::get('orders/{id}/edit', 'OrdersController@edit');
     Route::post('orders', 'OrdersController@store');
     Route::put('orders/{id}', 'OrdersController@update');
+    Route::post('change-order-status', 'OrdersController@changeOrderStatusApi');
+    Route::post('close-order', 'OrdersController@closeOrder');
 
     Route::get('open-orders', 'OrdersController@openOrders');
+
+
+    Route::get('show-settings', 'SettingsController@show');
+    Route::post('save-settings', 'SettingsController@save');
+    Route::get('get-setting-by-slug', 'SettingsController@getSettingBySlug');
 
 });
