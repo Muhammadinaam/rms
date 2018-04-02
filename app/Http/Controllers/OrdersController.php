@@ -350,4 +350,9 @@ class OrdersController extends Controller
                 'is_reprint' => $is_reprint,
             ]);
     }
+
+    public function printForCustomer($order_id)
+    {
+        $this->insertPrintJob('Customer Print', $order_id, 0);
+    }
 }

@@ -48,6 +48,7 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::put('orders/{id}', 'OrdersController@update');
     Route::post('change-order-status', 'OrdersController@changeOrderStatusApi');
     Route::post('close-order', 'OrdersController@closeOrder');
+    Route::post('print-for-customer/{order_id}', 'OrdersController@printForCustomer');
 
     Route::get('open-orders', 'OrdersController@openOrders');
 

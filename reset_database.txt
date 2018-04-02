@@ -1,0 +1,15 @@
+delete from users where id > 1;
+
+truncate user_permissions;
+
+truncate tos_edits_details;
+
+truncate tos_edits;
+
+truncate tos;
+
+truncate tables;
+
+truncate print_jobs;
+
+truncate items;
