@@ -74,6 +74,24 @@ class UsersController extends Controller
                 ],
             ],
         ],
+        [
+            'name' => 'Reports', 
+            'icon' => 'fa fa-bar-chart', 
+            'children' => [
+                [
+                    'name' => 'Sales Report', 
+                    'icon' => 'fa fa-line-chart', 
+                    'url'=> 'sales-report', 
+                    'permission' => 'sales-report',
+                ],
+                [
+                    'name' => 'Collection Report', 
+                    'icon' => 'fa fa-money', 
+                    'url'=> 'collection-report', 
+                    'permission' => 'collection-report',
+                ],
+            ],
+        ],
     ];
 
     

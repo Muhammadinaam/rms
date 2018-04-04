@@ -58,4 +58,8 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::post('save-settings', 'SettingsController@save');
     Route::get('get-setting-by-slug', 'SettingsController@getSettingBySlug');
 
+    
+    Route::get('sales-report', 'ReportsController@salesReport');
+    Route::get('collection-report', 'ReportsController@collectionReport');
+
 });
