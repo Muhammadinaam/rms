@@ -355,4 +355,9 @@ class OrdersController extends Controller
     {
         $this->insertPrintJob('Customer Print', $order_id, 0);
     }
+    
+    public function reprintForKitchens($order_id)
+    {
+        $this->insertPrintJob('Reprint for Kitchens', $order_id, true);        
+    }
 }
