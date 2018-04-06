@@ -17,6 +17,8 @@ use Illuminate\Http\Request;
 
 Route::group(['middleware'=>['auth:api']], function(){
 
+    Route::post('change-password', 'UsersController@changePassword');
+
     Route::post('get-logged-in-user-info', 'UsersController@getLoggedInUserInfo');
 
     Route::get('get-menus', 'UsersController@getMenus');

@@ -9,6 +9,7 @@ use DB;
 use Hash;
 use Illuminate\Validation\Rule;
 
+
 class UsersController extends Controller
 {
     //
@@ -158,6 +159,30 @@ class UsersController extends Controller
             
             return $menus;
         }
+    }
+
+    public function changePassword()
+    {
+        $old_password = request()->old_password;
+        $new_password = request()->new_password;
+
+        $existing_old_password = DB::table('users')
+                                    ->select('password')
+                                    ->where('id', Auth::user()->id)
+                                    ->first()->password;
+
+        
+
+        if (Hash::check($old_password, $existing_old_password) == false) {
+            // The passwords match...
+            return ['success' => false, 'message' => 'Old password is not correct'];
+        }
+
+        DB::table('users')
+            ->where('id', Auth::user()->id)
+            ->update(['password' => Hash::make($new_password) ]);
+
+        return ['success' => true, 'message' => 'Password changed successfully'];
     }
 
     public function getPermissions()
