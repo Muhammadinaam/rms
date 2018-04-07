@@ -71,6 +71,7 @@ class OrdersController extends Controller
     public function saveOrder($order, $order_details, $deleted_details)
     {
         
+        
         try
         {
             DB::beginTransaction();
@@ -179,10 +180,14 @@ class OrdersController extends Controller
             }
 
             // add new details to order
+            
             foreach($order_details as $order_detail)
             {
+                
                 if($order_detail['detail_id'] == null)
                 {
+                    
+                    
                     DB::table('tos_details')
                         ->insert([
                             'to_id' => $id,
@@ -193,6 +198,10 @@ class OrdersController extends Controller
                         ]);
                 }
             }
+
+            
+
+            
 
             // add new details to in tos_edits_details
             if($is_new_order == false)
@@ -292,7 +301,7 @@ class OrdersController extends Controller
                     ->update(['current_order_id' => null]);
             }
 
-            if($status == 3)
+            if($status == 4)
             {
                 $this->insertPrintJob('Order Cancelled', $order_id, 0);
             }
@@ -331,7 +340,7 @@ class OrdersController extends Controller
                 ]);
 
 
-            $close_order_result = $this->changeOrderStatus($order_id, 4);
+            $close_order_result = $this->changeOrderStatus($order_id, 3);
 
             if($close_order_result['success'] == false)
                 throw new \Exception( $close_order_result['message'], 1);

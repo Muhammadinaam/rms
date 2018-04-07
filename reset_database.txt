@@ -2,11 +2,14 @@ delete from users where id > 1;
 
 truncate user_permissions;
 
-truncate tos_edits_details;
 
 truncate tos_edits;
 
+truncate tos_edits_details;
+
 truncate tos;
+
+truncate tos_details;
 
 truncate tables;
 
