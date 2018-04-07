@@ -292,7 +292,7 @@ class OrdersController extends Controller
                     ->update(['current_order_id' => null]);
             }
 
-            if($status == 4)
+            if($status == 3)
             {
                 $this->insertPrintJob('Order Cancelled', $order_id, 0);
             }
