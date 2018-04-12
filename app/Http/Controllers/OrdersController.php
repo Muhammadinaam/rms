@@ -45,6 +45,7 @@ class OrdersController extends Controller
                     ->select('tos.id', 
                         'tos.order_type_id as order_type',
                         'tos.table_id as table',
+                        'tos.cover',
                         'tables.name as table_name',
                         'tables.portion as table_portion',
                         'tos.deliver_to_name',
@@ -83,6 +84,7 @@ class OrdersController extends Controller
 
             $order_data = array();
             $order_data['order_type_id'] = $order['order_type'];
+            $order_data['cover'] = $order['cover'];
 
             if($is_new_order)
             {
