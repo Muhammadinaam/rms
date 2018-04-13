@@ -17,16 +17,23 @@ class AddSalesAndCollectionReportsPermissions extends Migration
             //
             DB::table('permissions')->insert([
                 'group' => 'Reports',
-                'name' => 'Sales Report',
-                'slug' => 'sales-report',
+                'name' => 'Sales By Item Report',
+                'slug' => 'sales-by-item-report',
                 'sort' => '13',
+            ]);
+
+            DB::table('permissions')->insert([
+                'group' => 'Reports',
+                'name' => 'Sales By Order Report',
+                'slug' => 'sales-by-order-report',
+                'sort' => '14',
             ]);
 
             DB::table('permissions')->insert([
                 'group' => 'Reports',
                 'name' => 'Collection Report',
                 'slug' => 'collection-report',
-                'sort' => '14',
+                'sort' => '15',
             ]);
         });
     }

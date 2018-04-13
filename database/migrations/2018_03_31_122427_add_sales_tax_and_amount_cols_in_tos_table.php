@@ -30,6 +30,7 @@ class AddSalesTaxAndAmountColsInTosTable extends Migration
     {
         Schema::table('tos', function (Blueprint $table) {
             //
+            $table->dropColumns(['order_amount_ex_st','sales_tax','order_amount_inc_st']);
         });
     }
 }

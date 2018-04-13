@@ -9,7 +9,7 @@ class ReportsController extends Controller
 {
     //
 
-    public function salesReport()
+    public function salesReportByItem()
     {
         $from_date = \Carbon\Carbon::parse( request()->from_date )->format('Y-m-d H:i:s');
         $to_date = \Carbon\Carbon::parse( request()->to_date )->format('Y-m-d H:i:s');

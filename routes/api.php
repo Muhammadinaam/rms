@@ -61,7 +61,7 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::get('get-setting-by-slug', 'SettingsController@getSettingBySlug');
 
     
-    Route::get('sales-report', 'ReportsController@salesReport');
+    Route::get('sales-report-by-item', 'ReportsController@salesReportByItem');
     Route::get('collection-report', 'ReportsController@collectionReport');
 
 });

@@ -18,6 +18,7 @@ class AddColumnsInTosTable extends Migration
             $table->decimal('cover')->before('deliver_to_name')->nullable();
             $table->decimal('order_amount_before_discount', 20,5)->before('order_amount_ex_st')->nullable();
             $table->decimal('discount', 20,5)->before('order_amount_ex_st')->nullable();
+            $table->integer('discount_allowed_by')->before('order_amount_ex_st')->nullable();
         });
     }
 

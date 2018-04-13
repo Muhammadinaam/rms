@@ -80,9 +80,15 @@ class UsersController extends Controller
             'icon' => 'fa fa-bar-chart', 
             'children' => [
                 [
-                    'name' => 'Sales Report', 
+                    'name' => 'Sales By Item', 
                     'icon' => 'fa fa-line-chart', 
-                    'url'=> 'sales-report', 
+                    'url'=> 'sales-by-item-report', 
+                    'permission' => 'sales-report',
+                ],
+                [
+                    'name' => 'Sales By Order', 
+                    'icon' => 'fa fa-line-chart', 
+                    'url'=> 'sales-by-order-report', 
                     'permission' => 'sales-report',
                 ],
                 [
