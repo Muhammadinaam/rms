@@ -47,6 +47,11 @@ class AddSalesAndCollectionReportsPermissions extends Migration
     {
         Schema::table('permissions', function (Blueprint $table) {
             //
+
+            DB::table('permissions')
+                ->whereIn('name', ['sales-by-item-report', 'sales-by-order-report', 'collection-report'])
+                ->delete();
+
         });
     }
 }
