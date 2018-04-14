@@ -48,8 +48,9 @@ class ReportsController extends Controller
                     
                     ->select(
                         $this->orders_table.'.id',
-                        $this->orders_table.'.order_amount_inc_st as amount'
+                        DB::raw('sum('.$this->orders_table.'.order_amount_inc_st) as amount')
                     )
+                    ->groupBy(DB::raw( $this->orders_table.'.id WITH ROLLUP'))
                     ->get();
     }
 
