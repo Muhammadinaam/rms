@@ -38,6 +38,31 @@ class OrdersController extends Controller
         return $this->saveOrder($order, $order_details, $deleted_details);
     }
 
+    public function saveOrderDiscount()
+    {
+        $order = json_decode( request()->order, true );
+
+        try
+        {
+            DB::table('tos')
+                ->where('id', $order['id'])
+                ->update([
+                    'discount_allowed_by' => Auth::user()->id,
+                    'order_amount_before_discount' => $order['order_amount_before_discount'],
+                    'discount' => $order['discount'],
+                    'order_amount_ex_st' => $order['order_amount_ex_st'],
+                    'sales_tax' => $order['sales_tax'],
+                    'order_amount_inc_st' => $order['order_amount_inc_st'],
+                ]);
+
+            return ['success' => true, 'message' => 'Saved Successfully'];
+        }
+        catch(\Exception $ex)
+        {
+            return ['success' => false, 'message' => 'Not saved. Error: ' . $ex->getMessage()];
+        }
+    }
+
     public function edit($id)
     {
         $order = DB::table('tos')
@@ -86,6 +111,9 @@ class OrdersController extends Controller
             $order_data['order_type_id'] = $order['order_type'];
             $order_data['cover'] = $order['cover'];
 
+            
+
+
             if($is_new_order)
             {
                 $order_data['order_datetime'] = \Carbon\Carbon::now()->format('Y-m-d H:i:s');
@@ -116,6 +144,9 @@ class OrdersController extends Controller
                 $order_data['deliver_to_address'] = $order['deliver_to_address'];
             }
 
+            $order_data['discount'] = 0;
+            $order_data['order_amount_before_discount'] = $order['order_amount_ex_st'];
+            
             $order_data['order_amount_ex_st'] = $order['order_amount_ex_st'];
             $order_data['sales_tax'] = $order['sales_tax'];
             $order_data['order_amount_inc_st'] = $order['order_amount_inc_st'];
