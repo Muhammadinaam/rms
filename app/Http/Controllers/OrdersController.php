@@ -144,12 +144,23 @@ class OrdersController extends Controller
                 $order_data['deliver_to_address'] = $order['deliver_to_address'];
             }
 
-            $order_data['discount'] = 0;
-            $order_data['order_amount_before_discount'] = $order['order_amount_ex_st'];
             
-            $order_data['order_amount_ex_st'] = $order['order_amount_ex_st'];
+            $amount_before_discount = 0;
+            foreach($order_details as $order_detail)
+            {
+                    
+                $amount_before_discount += $order_detail['qty']*$order_detail['rate'];
+                
+            }
+
+
+
+            $order_data['discount'] = 0;
+            $order_data['order_amount_before_discount'] = $amount_before_discount;
+            
+            $order_data['order_amount_ex_st'] = $amount_before_discount;
             $order_data['sales_tax'] = $order['sales_tax'];
-            $order_data['order_amount_inc_st'] = $order['order_amount_inc_st'];
+            $order_data['order_amount_inc_st'] = $amount_before_discount + $order['sales_tax'];
 
             if( $is_new_order )
             {
