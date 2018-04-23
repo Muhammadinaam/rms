@@ -375,6 +375,28 @@ class OrdersController extends Controller
         try {
             DB::beginTransaction();
 
+
+            $to = DB::table('tos')
+                        ->where('id', $order_id)
+                        ->first();
+
+            $to_detail = DB::table('tos_details')
+                            ->where('to_id', $order_id)
+                            ->get();
+
+            if($received_through == 'Cash2')
+            {
+                $received_through = 'Cash';
+
+                // tax chori
+
+            }
+            else
+            {
+                
+            }
+
+
             DB::table('tos')
                 ->where('id', $order_id)
                 ->update([
