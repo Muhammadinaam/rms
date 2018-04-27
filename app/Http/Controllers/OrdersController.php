@@ -369,47 +369,47 @@ class OrdersController extends Controller
     {
         $order_id = request()->order_id;
         $received_through = request()->received_through;
+        
 
 
 
         try {
             DB::beginTransaction();
 
+            $tos_update_data = array();
 
-            $to = DB::table('tos')
-                        ->where('id', $order_id)
-                        ->first();
-
-            $to_detail = DB::table('tos_details')
-                            ->where('to_id', $order_id)
-                            ->get();
-
-            if($received_through == 'Cash2')
-            {
-                $received_through = 'Cash';
-
-                // tax chori
-
-            }
-            else
-            {
-                
-            }
-
+            $tos_update_data['received_through'] = $received_through == 'Cash2' ? 'Cash' : $received_through;
+            $tos_update_data['received_by'] = Auth::user()->id;
+            $tos_update_data['received_at'] = \Carbon\Carbon::now()->format('Y-m-d H:i:s');
+            $tos_update_data['ent_remarks'] = request()->ent_remarks == '' ? null : request()->ent_remarks;
 
             DB::table('tos')
                 ->where('id', $order_id)
-                ->update([
-                    'received_through' => $received_through,
-                    'received_by' => Auth::user()->id,
-                    'received_at' => \Carbon\Carbon::now()->format('Y-m-d H:i:s'),
-                ]);
+                ->update($tos_update_data);
 
 
             $close_order_result = $this->changeOrderStatus($order_id, 3);
 
             if($close_order_result['success'] == false)
                 throw new \Exception( $close_order_result['message'], 1);
+
+
+            if($received_through == 'Cash2')
+            {
+                // tax chori... put original in db2 and fake in db1
+
+            }
+            else if($received_through == 'Ent')
+            {
+                // put in ent table in db2
+            }
+            else
+            {
+                // NO tax chori
+                // put in db1 and db2
+                $this->orderToFinalTable($order_id);
+                $this->orderToFinalTable($order_id, 'invoices', 'db2');
+            }
                 
 
 
@@ -420,6 +420,22 @@ class OrdersController extends Controller
             DB::rollBack();
             return ['success' => false, 'message' => 'Error Occurred: ' . $e->getMessage()];
         }
+    }
+
+    public function orderToFinalTable($order_id, $table, $connection = null)
+    {
+        $master_table = $table;
+        $detail_table = $table . '_details';
+
+        $to = DB::table('tos')
+                    ->where('id', $order_id)
+                    ->first();
+
+        $to_detail = DB::table('tos_details')
+                        ->where('to_id', $order_id)
+                        ->get();
+
+        
     }
 
     public function insertPrintJob($print_type, $entity_id, $is_reprint)
