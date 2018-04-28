@@ -109,7 +109,7 @@ class OrdersController extends Controller
 
             $order_data = array();
             $order_data['order_type_id'] = $order['order_type'];
-            $order_data['cover'] = $order['cover'];
+            $order_data['cover'] = isset($order['cover']) ? $order['cover'] : null;
 
             
 
@@ -140,8 +140,8 @@ class OrdersController extends Controller
             else 
             {
                 $order_data['deliver_to_name'] = $order['deliver_to_name'];
-                $order_data['deliver_to_phone'] = $order['deliver_to_phone'];
-                $order_data['deliver_to_address'] = $order['deliver_to_address'];
+                $order_data['deliver_to_phone'] = isset($order['deliver_to_phone']) ? $order['deliver_to_phone'] : '' ;
+                $order_data['deliver_to_address'] = isset($order['deliver_to_address']) ? $order['deliver_to_address'] : '' ;
             }
 
             
@@ -394,20 +394,31 @@ class OrdersController extends Controller
                 throw new \Exception( $close_order_result['message'], 1);
 
 
-            if($received_through == 'Cash2')
+            if($received_through == 'Cash2' && config('app.is_client_bad') == true)
             {
                 // tax chori... put original in db2 and fake in db1
+                $this->orderToFinalTable($order_id, 'invoices', 'db2');
+
+                //put fake (reduced) in db1
+                $this->reduceOrder($order_id);
+                $this->orderToFinalTable($order_id, 'invoices');
 
             }
             else if($received_through == 'Ent')
             {
-                // put in ent table in db2
+                if( config('app.is_client_bad') == false )
+                {
+                    $this->orderToFinalTable($order_id, 'ent_bills');
+                }
+                $this->orderToFinalTable($order_id, 'ent_bills', 'db2');
+                
             }
             else
             {
                 // NO tax chori
                 // put in db1 and db2
-                $this->orderToFinalTable($order_id);
+
+                $this->orderToFinalTable($order_id, 'invoices');
                 $this->orderToFinalTable($order_id, 'invoices', 'db2');
             }
                 
@@ -422,10 +433,26 @@ class OrdersController extends Controller
         }
     }
 
-    public function orderToFinalTable($order_id, $table, $connection = null)
+    public function reduceOrder($order_id)
+    {
+        # code...
+    }
+
+    public function orderToFinalTable($order_id, $table, $connection_name = null)
     {
         $master_table = $table;
         $detail_table = $table . '_details';
+
+        $foreign_key = '';
+
+        if($master_table == 'invoices')
+        {
+            $foreign_key = 'invoice_id';
+        }
+        else if($master_table == 'ent_bills')
+        {
+            $foreign_key = 'ent_bill_id';
+        }
 
         $to = DB::table('tos')
                     ->where('id', $order_id)
@@ -436,6 +463,39 @@ class OrdersController extends Controller
                         ->get();
 
         
+
+
+        $connection = $connection_name != null ? DB::connection($connection_name) : DB::connection();
+
+        $connection->beginTransaction();
+        
+        $order_id = $to->id;
+
+        $to = json_decode( json_encode( $to ), true);
+        unset($to['id']);
+
+        $to['order_id'] = $order_id;
+        $master_id = $connection->table($master_table)
+                        ->insertGetId($to);
+
+        
+
+        foreach ($to_detail as $to_detail_row) {
+            $to_detail_row = json_decode( json_encode( $to_detail_row ), true);
+            
+            unset( $to_detail_row['id'] );
+            unset( $to_detail_row['to_id'] );
+
+            $to_detail_row[$foreign_key] = $master_id;
+
+            $connection->table($detail_table)
+                ->insert($to_detail_row);
+        }
+
+        $connection->commit();
+
+        
+
     }
 
     public function insertPrintJob($print_type, $entity_id, $is_reprint)

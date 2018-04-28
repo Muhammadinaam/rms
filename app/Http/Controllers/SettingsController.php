@@ -49,4 +49,11 @@ class SettingsController extends Controller
 		return json_encode(DB::table('settings')->where('slug', $slug)->first());
 	}
 
+	public function getConfig()
+	{
+		$config = request()->config;
+
+		return config($config);
+	}
+
 }

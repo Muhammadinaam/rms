@@ -97,6 +97,12 @@ class UsersController extends Controller
                     'url'=> 'collection-report', 
                     'permission' => 'collection-report',
                 ],
+                [
+                    'name' => 'Ent Report', 
+                    'icon' => 'fa fa-money', 
+                    'url'=> 'ent-report', 
+                    'permission' => 'ent-report',
+                ],
             ],
         ],
     ];

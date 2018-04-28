@@ -15,7 +15,7 @@ class AddEntRemarksColumnToTosTable extends Migration
     {
         Schema::table('tos', function (Blueprint $table) {
             //
-            $table->text('ent_remarks');
+            $table->text('ent_remarks')->nullable()->default(null);
         });
     }
 
