@@ -524,6 +524,7 @@ class OrdersController extends Controller
             ->select('id as order_id')
             ->whereNotIn('id', DB::table('invoices')->select('order_id')->get()->pluck('order_id') )
             ->where('tos.received_through', '<>', 'Ent')
+            ->where('tos.order_status_id', 3)
             ->get()->pluck('order_id');
 
         foreach($order_ids as $order_id)
