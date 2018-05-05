@@ -14,12 +14,12 @@ class AddEntBillsTable extends Migration
     public function up()
     {
 
-        if( config('app.is_client_bad') == false )
-        {
+        //if( config('app.is_client_bad') == false )
+        //{
             Schema::create('ent_bills', function (Blueprint $table) {
                 $this->upFunction($table);
             });    
-        }
+        //}
 
         Schema::connection('db2')->create('ent_bills', function (Blueprint $table) {
             $this->upFunction($table);

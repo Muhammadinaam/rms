@@ -10,49 +10,273 @@ class ReportsController extends Controller
 {
     //
 
-    public $orders_table = 'tos';
-    public $orders_details_table = 'tos_details';
-    public $order_details_fk = 'to_id';
+    public $invoices_table = 'invoices';
+    public $invoices_details_table = 'invoices_details';
+    public $invoices_details_fk = 'invoice_id';
+
+    public $ent_table = 'ent_bills';
+    public $ent_details_table = 'ent_bills_details';
+    public $ent_details_fk = 'ent_bill_id';
+
+
+    public function createTempTables($from_date, $to_date)
+    {
+        {
+            
+
+            DB::statement('CREATE TEMPORARY TABLE IF NOT EXISTS invoices_temp AS (SELECT * FROM ' 
+                . $this->invoices_table . ' limit 0 )');
+
+            DB::statement('CREATE TEMPORARY TABLE IF NOT EXISTS invoices_details_temp AS (SELECT * FROM ' 
+                . $this->invoices_details_table . 
+                ' limit 0 )');
+
+            DB::statement('CREATE TEMPORARY TABLE IF NOT EXISTS ent_bills_temp AS (SELECT * FROM ' 
+                . $this->ent_table . ' limit 0 )');
+
+            DB::statement('CREATE TEMPORARY TABLE IF NOT EXISTS ent_bills_details_temp AS (SELECT * FROM ' 
+                . $this->ent_details_table . 
+                ' limit 0 )');
+
+            DB::connection('db2')
+                ->table($this->invoices_table)
+                ->whereBetween($this->invoices_table.'.order_datetime', [$from_date, $to_date])
+                ->orderBy($this->invoices_table.'.id')
+                ->chunk(100, function($rows){
+                    $rows = json_decode(json_encode($rows), true);
+                    DB::table('invoices_temp')
+                    ->insert(
+                        $rows
+                    );
+                });
+
+            
+
+            DB::connection('db2')
+                ->table($this->invoices_details_table)
+                ->select($this->invoices_details_table.'.*')
+                ->join($this->invoices_table, 
+                        $this->invoices_details_table .'.'.$this->invoices_details_fk,
+                        '=',
+                        $this->invoices_table.'.id'
+                )
+                ->whereBetween($this->invoices_table.'.order_datetime', [$from_date, $to_date])
+                ->orderBy($this->invoices_details_table.'.id')
+                ->chunk(100, function($rows){
+                    $rows = json_decode(json_encode($rows), true);
+                    DB::table('invoices_details_temp')
+                    ->insert(
+                        $rows
+                    );
+                });
+
+
+            DB::connection('db2')
+                ->table($this->ent_table)
+                ->whereBetween($this->ent_table.'.order_datetime', [$from_date, $to_date])
+                ->orderBy($this->ent_table.'.id')
+                ->chunk(100, function($rows){
+                    $rows = json_decode(json_encode($rows), true);
+                    DB::table('ent_bills_temp')
+                    ->insert(
+                        $rows
+                    );
+                });
+
+            
+
+            DB::connection('db2')
+                ->table($this->ent_details_table)
+                ->select($this->ent_details_table.'.*')
+                ->join($this->ent_table, 
+                        $this->ent_details_table .'.'.$this->ent_details_fk,
+                        '=',
+                        $this->ent_table.'.id'
+                )
+                ->whereBetween($this->ent_table.'.order_datetime', [$from_date, $to_date])
+                ->orderBy($this->ent_details_table.'.id')
+                ->chunk(100, function($rows){
+                    $rows = json_decode(json_encode($rows), true);
+                    DB::table('ent_bills_details_temp')
+                    ->insert(
+                        $rows
+                    );
+                });
+
+
+            $this->invoices_table = 'invoices_temp';
+            $this->invoices_details_table = 'invoices_details_temp';
+
+            $this->ent_table = 'ent_bills_temp';
+            $this->ent_details_table = 'ent_bills_details_temp';
+        }
+    }
+
 
     public function salesReportByItem()
     {
+        
+
         $from_date = \Carbon\Carbon::parse( request()->from_date )->format('Y-m-d H:i:s');
         $to_date = \Carbon\Carbon::parse( request()->to_date )->format('Y-m-d H:i:s');
+        $show_actual = request()->s_a;
 
-        return DB::table($this->orders_table)
+        $show_actual = filter_var($show_actual, FILTER_VALIDATE_BOOLEAN);
+
+        if($show_actual == true)
+        {
+            $this->createTempTables($from_date, $to_date);
+        }
+
+        $data = array();
+
+        $data['report_summary'] = $this->getReportSummary($from_date, $to_date);
+
+        $data['report_detail'] = array();
+
+        $data['report_detail']['orders'] = $this->getReportByItems(
+            $this->invoices_table, 
+            $this->invoices_details_table, 
+            $this->invoices_details_fk, 
+            $from_date, 
+            $to_date);
+
+        $data['report_detail']['ent_orders'] = $this->getReportByItems(
+            $this->ent_table, 
+            $this->ent_details_table, 
+            $this->ent_details_fk, 
+            $from_date, 
+            $to_date);
+
+        return $data;
+    }
+
+    public function getReportByItems($master_table, $details_table, $fk, $from_date, $to_date)
+    {
+        return DB::table($master_table)
+            ->whereBetween('order_datetime', [$from_date, $to_date])
+            ->where($master_table.'.order_status_id', 3)
+            ->join($details_table, 
+                    $details_table .'.'.$fk,
+                    '=',
+                    $master_table.'.id'
+            )
+            ->leftJoin('items', 'items.id', '=', $details_table .'.item_id')
+            ->select(
+                'items.name',
+                DB::raw('sum('.$details_table .'.qty) as qty'),
+                DB::raw('sum('.$details_table .'.amount) as amount')
+            )
+            ->groupBy(DB::raw('items.name WITH ROLLUP'))
+            ->get();
+    }
+
+    public function getReportSummary($from_date, $to_date)
+    {
+        $summary = array();
+
+        $summary['receipt_detail'] = DB::table($this->invoices_table)
                     ->whereBetween('order_datetime', [$from_date, $to_date])
-                    ->where($this->orders_table.'.order_status_id', 3)
-                    ->join($this->orders_details_table, 
-                            $this->orders_details_table .'.'.$this->order_details_fk,
-                            '=',
-                            $this->orders_table.'.id'
-                    )
-                    ->leftJoin('items', 'items.id', '=', $this->orders_details_table .'.item_id')
                     ->select(
-                        'items.name',
-                        DB::raw('sum('.$this->orders_details_table .'.qty) as qty'),
-                        DB::raw('sum('.$this->orders_details_table .'.amount) as amount')
+                        $this->invoices_table . '.received_through',
+                        DB::raw('sum('.$this->invoices_table.'.order_amount_inc_st) as total_received')
                     )
-                    ->groupBy(DB::raw('items.name WITH ROLLUP'))
+                    ->groupBy($this->invoices_table.'.received_through')
                     ->get();
+
+        $summary['st_and_discount'] = DB::table($this->invoices_table)
+            ->whereBetween('order_datetime', [$from_date, $to_date])
+            ->select(
+                DB::raw('sum('.$this->invoices_table.'.sales_tax) as total_sales_tax'),
+                DB::raw('sum('.$this->invoices_table.'.discount) as total_discount')
+            )
+            ->first();
+
+        return $summary;
+    }
+
+    public function getReportByOrders($orders_table, $from_date, $to_date)
+    {
+        $query = DB::table($orders_table)
+        ->whereBetween('order_datetime', [$from_date, $to_date])
+        ->where($orders_table.'.order_status_id', 3)
+        
+        ->select(
+            $orders_table.'.id',
+            $orders_table.'.order_id',
+            $orders_table.'.ent_remarks',
+            $orders_table.'.received_through',
+            'order_types.name as order_type',
+            DB::raw('sum('.$orders_table.'.cover) as cover'),
+            DB::raw('sum('.$orders_table.'.discount) as discount'),
+            DB::raw('sum('.$orders_table.'.sales_tax) as sales_tax'),
+            DB::raw('sum('.$orders_table.'.order_amount_inc_st) as amount')
+        )
+        ->join('order_types', 'order_types.id', '=', $orders_table.'.order_type_id');
+        
+        $totals_row = $query->select(
+            DB::raw('null as id'),
+            DB::raw('null as order_id'),
+            DB::raw('null as ent_remarks'),
+            DB::raw('null as received_through'),
+            DB::raw('null as order_type'),
+            DB::raw('sum('.$orders_table.'.cover) as cover'),
+            DB::raw('sum('.$orders_table.'.discount) as discount'),
+            DB::raw('sum('.$orders_table.'.sales_tax) as sales_tax'),
+            DB::raw('sum('.$orders_table.'.order_amount_inc_st) as amount')
+        )->get()->toArray();
+
+        $rows = $query->select(
+            $orders_table.'.id',
+            $orders_table.'.order_id',
+            $orders_table.'.ent_remarks',
+            $orders_table.'.received_through',
+            'order_types.name as order_type',
+
+            $orders_table.'.cover',
+            $orders_table.'.discount',
+            $orders_table.'.sales_tax',
+            $orders_table.'.order_amount_inc_st as amount'
+        )->get()->toArray();
+
+        $rows = array_merge($rows, $totals_row);
+
+        return $rows;
+
+        
     }
 
     public function salesReportByOrder()
     {
         $from_date = \Carbon\Carbon::parse( request()->from_date )->format('Y-m-d H:i:s');
         $to_date = \Carbon\Carbon::parse( request()->to_date )->format('Y-m-d H:i:s');
+        $show_actual = request()->s_a;
 
-        return DB::table($this->orders_table)
-                    ->whereBetween('order_datetime', [$from_date, $to_date])
-                    ->where($this->orders_table.'.order_status_id', 3)
-                    
-                    ->select(
-                        $this->orders_table.'.id',
-                        DB::raw('sum('.$this->orders_table.'.order_amount_inc_st) as amount'),
-                        DB::raw('sum('.$this->orders_table.'.discount) as discount')
-                    )
-                    ->groupBy(DB::raw( $this->orders_table.'.id WITH ROLLUP'))
-                    ->get();
+        $show_actual = filter_var($show_actual, FILTER_VALIDATE_BOOLEAN);
+
+        if($show_actual == true)
+        {
+            $this->createTempTables($from_date, $to_date);
+        }
+
+        $data = array();
+
+        $data['report_summary'] = $this->getReportSummary($from_date, $to_date);
+
+        $data['report_detail'] = array();
+
+        $data['report_detail']['orders'] = $this->getReportByOrders(
+            $this->invoices_table, 
+            $from_date, 
+            $to_date);
+
+        $data['report_detail']['ent_orders'] = $this->getReportByOrders(
+            $this->ent_table, 
+            $from_date, 
+            $to_date);
+
+        return $data;
+
     }
 
     public function collectionReport()
