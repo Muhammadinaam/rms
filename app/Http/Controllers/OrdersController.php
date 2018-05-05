@@ -517,4 +517,21 @@ class OrdersController extends Controller
     {
         $this->insertPrintJob('Reprint for Kitchens', $order_id, true);        
     }
+
+    public function transferOrdersToInvoicesTable()
+    {
+        $order_ids = DB::table('tos')
+            ->select('id as order_id')
+            ->whereNotIn('id', DB::table('invoices')->select('order_id')->get()->pluck('order_id') )
+            ->where('tos.received_through', '<>', 'Ent')
+            ->get()->pluck('order_id');
+
+        foreach($order_ids as $order_id)
+        {
+            $this->orderToFinalTable($order_id, 'invoices');
+        }
+
+        return 'done';
+        
+    }
 }
