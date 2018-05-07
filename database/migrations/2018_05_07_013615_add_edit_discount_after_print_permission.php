@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddSalesAndCollectionReportsPermissions extends Migration
+class AddEditDiscountAfterPrintPermission extends Migration
 {
     /**
      * Run the migrations.
@@ -16,24 +16,18 @@ class AddSalesAndCollectionReportsPermissions extends Migration
         Schema::table('permissions', function (Blueprint $table) {
             //
             DB::table('permissions')->insert([
-                'group' => 'Reports',
-                'name' => 'Sales By Item Report',
-                'slug' => 'sales-by-item-report',
-                'sort' => '13',
+                'group' => 'Orders Management',
+                'name' => 'Edit / Discount after Print for Customer',
+                'slug' => 'edit-discount-after-print',
+                'sort' => '17',
             ]);
 
+            //edits-after-print-report
             DB::table('permissions')->insert([
                 'group' => 'Reports',
-                'name' => 'Sales By Order Report',
-                'slug' => 'sales-by-order-report',
-                'sort' => '14',
-            ]);
-
-            DB::table('permissions')->insert([
-                'group' => 'Reports',
-                'name' => 'Collection Report',
-                'slug' => 'collection-report',
-                'sort' => '15',
+                'name' => 'Edits after Print Report',
+                'slug' => 'edits-after-print-report',
+                'sort' => '18',
             ]);
         });
     }
@@ -47,9 +41,8 @@ class AddSalesAndCollectionReportsPermissions extends Migration
     {
         Schema::table('permissions', function (Blueprint $table) {
             //
-
             DB::table('permissions')
-                ->whereIn('slug', ['sales-by-item-report', 'sales-by-order-report', 'collection-report'])
+                ->whereIn('slug', ['edit-discount-after-print', 'edits-after-print-report'])
                 ->delete();
 
         });

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use DB;
 use Auth;
+use Illuminate\Support\Facades\Hash;
 
 class OrdersController extends Controller
 {
@@ -35,15 +36,51 @@ class OrdersController extends Controller
         $order_details = $order['order_details'];
         $deleted_details = json_decode( request()->deleted_details, true );
 
-        return $this->saveOrder($order, $order_details, $deleted_details);
+        
+
+        $other_info = json_decode( request()->other_info, true );
+
+        return $this->saveOrder($order, $order_details, $deleted_details, $other_info);
     }
 
     public function saveOrderDiscount()
     {
         $order = json_decode( request()->order, true );
+        $other_info = json_decode( request()->other_info, true );
 
         try
         {
+            
+            $order_being_updated = DB::table('tos')->where('id', $order['id'])->first();
+
+            if($order['is_printed_for_customer'] == 1)
+            {
+                
+                if($other_info['user_id'] == '' || $other_info['password'] == '')
+                {
+                    return ['success' => 'false', 'message' => 'Please enter User ID and Password'];
+                }
+                
+                $auth_for_edit_after_print = $this->AuthForEditAfterPrint( $other_info['user_id'], $other_info['password'] );
+
+                if( $auth_for_edit_after_print == 0 )
+                {
+                    return ['success' => 'false', 'message' => 'User ID / Password is not correct or does not have permission to edit after print'];
+                }
+
+                DB::table('edits_after_print_details')
+                    ->insert([
+                        'order_id' => $order['id'],
+                        'edit_type' => 'Discount Changed',
+                        'remarks' => $other_info['remarks'],
+                        'before_amount' => $order_being_updated->order_amount_inc_st,
+                        'after_amount' => $order['order_amount_inc_st'],
+                        'edited_by' => Auth::user()->id,
+                        'approved_by' => $auth_for_edit_after_print,
+                        'created_at' => \Carbon\Carbon::now()->format('Y-m-d H:i:s'),
+                    ]);
+            }
+
             DB::table('tos')
                 ->where('id', $order['id'])
                 ->update([
@@ -55,10 +92,13 @@ class OrdersController extends Controller
                     'order_amount_inc_st' => $order['order_amount_inc_st'],
                 ]);
 
+                
+
             return ['success' => true, 'message' => 'Saved Successfully'];
         }
         catch(\Exception $ex)
         {
+            throw $ex;
             return ['success' => false, 'message' => 'Not saved. Error: ' . $ex->getMessage()];
         }
     }
@@ -75,7 +115,8 @@ class OrdersController extends Controller
                         'tables.portion as table_portion',
                         'tos.deliver_to_name',
                         'tos.deliver_to_phone',
-                        'tos.deliver_to_address'
+                        'tos.deliver_to_address',
+                        'tos.is_printed_for_customer'
                     )
                     ->leftJoin('tables', 'tables.id', '=', 'tos.table_id')
                     ->first();
@@ -94,7 +135,41 @@ class OrdersController extends Controller
         return json_encode($order);
     }
 
-    public function saveOrder($order, $order_details, $deleted_details)
+    public function AuthForEditAfterPrint($email, $password)
+    {
+        $ret = 0;
+
+        $user = DB::table('users')
+                        ->where('email', $email)
+                        ->where('is_activated', 1)
+                        ->select('id', 'password', 'is_admin')
+                        ->first();
+
+        if($user != null && Hash::check($password, $user->password))
+        {
+            if($user->is_admin == 1)
+            {
+                $ret = $user->id;
+            }
+
+            $permission = DB::table('user_permissions')
+                ->join('permissions', 'permissions.id', '=', 'user_permissions.permission_id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.slug', 'edit-discount-after-print')
+                ->first();
+
+            if($permission != null)
+            {
+                $ret = $user->id;
+            }
+
+        }
+
+        return $ret;
+
+    }
+
+    public function saveOrder($order, $order_details, $deleted_details, $other_info = null)
     {
         
         
@@ -106,6 +181,8 @@ class OrdersController extends Controller
             $is_new_order = $id == null ? true : false;
 
             $order_being_updated = $is_new_order == false ? @DB::table('tos')->where('id', $id)->first() : null;
+
+            
 
             $order_data = array();
             $order_data['order_type_id'] = $order['order_type'];
@@ -169,11 +246,18 @@ class OrdersController extends Controller
             }
             else 
             {
+                $table_id = null;
+
+                if( isset($order_data['table_id']) )
+                {
+                    $table_id = $order_data['table_id'];
+                }
+
                 $tos_edit_id = DB::table('tos_edits')
                         ->insertGetId([
                             'to_id' => $id,
-                            'is_table_changed' => $order_being_updated->table_id != $order_data['table_id'] ? 1 : 0,
-                            'new_table_id' => $order_data['table_id'],
+                            'is_table_changed' => $order_being_updated->table_id != $table_id ? 1 : 0,
+                            'new_table_id' => $table_id,
                             'created_at' => \Carbon\Carbon::now()->format('Y-m-d H:i:s'),
                         ]);
 
@@ -279,11 +363,50 @@ class OrdersController extends Controller
             }
 
 
+
+
+
+
+            if( $is_new_order == false )
+            {
+                if($order['is_printed_for_customer'] == 1)
+                {
+                    
+                    if($other_info['user_id'] == '' || $other_info['password'] == '')
+                    {
+                        return ['success' => 'false', 'message' => 'Please enter User ID and Password'];
+                    }
+                    
+                    $auth_for_edit_after_print = $this->AuthForEditAfterPrint( $other_info['user_id'], $other_info['password'] );
+
+                    if( $auth_for_edit_after_print == 0 )
+                    {
+                        return ['success' => 'false', 'message' => 'User ID / Password is not correct or does not have permission to edit after print'];
+                    }
+
+                    DB::table('edits_after_print_details')
+                        ->insert([
+                            'order_id' => $order['id'],
+                            'edit_type' => 'Order Edited',
+                            'remarks' => $other_info['remarks'],
+                            'before_amount' => $order_being_updated->order_amount_inc_st,
+                            'after_amount' => $order_data['order_amount_inc_st'],
+                            'edited_by' => Auth::user()->id,
+                            'approved_by' => $auth_for_edit_after_print,
+                            'created_at' => \Carbon\Carbon::now()->format('Y-m-d H:i:s'),
+                        ]);
+                }
+            }
+
+
+
+
             DB::commit();
             return ['success' => true, 'message' => 'Saved Successfully'];
         }
         catch(\Exception $ex)
         {
+            //throw $ex;
             DB::rollBack();
             return ['success' => false, 'message' => 'Order was not saved. Error: ' . $ex->getMessage()];
         }
@@ -331,6 +454,10 @@ class OrdersController extends Controller
             {
                 $order_data['served_datetime'] = null;
             }
+            else if($status == 3)
+            {
+                $order_data['closing_time'] = \Carbon\Carbon::now()->format('Y-m-d H:i:s');
+            }
 
             DB::table('tos')
                 ->where('id', $order_id)
@@ -340,6 +467,7 @@ class OrdersController extends Controller
 
             if($status == 3 || $status == 4)
             {
+
                 DB::table('tables')
                     ->where('current_order_id', $order_id)
                     ->update(['current_order_id' => null]);
@@ -473,6 +601,7 @@ class OrdersController extends Controller
 
         $to = json_decode( json_encode( $to ), true);
         unset($to['id']);
+        unset($to['is_printed_for_customer']);
 
         $to['order_id'] = $order_id;
         $master_id = $connection->table($master_table)
@@ -510,6 +639,10 @@ class OrdersController extends Controller
 
     public function printForCustomer($order_id)
     {
+        DB::table('tos')
+            ->where('id', $order_id)
+            ->update(['is_printed_for_customer'=>1]);
+
         $this->insertPrintJob('Customer Print', $order_id, 0);
     }
     

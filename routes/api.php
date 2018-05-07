@@ -65,6 +65,7 @@ Route::group(['middleware'=>['auth:api']], function(){
     
     Route::get('sales-report-by-item', 'ReportsController@salesReportByItem');
     Route::get('sales-report-by-order', 'ReportsController@salesReportByOrder');
+    Route::get('edits-after-print-report', 'ReportsController@editsAfterPrintReport');
     Route::get('collection-report', 'ReportsController@collectionReport');
 
 });

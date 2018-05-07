@@ -92,11 +92,17 @@ class UsersController extends Controller
                     'permission' => 'sales-report',
                 ],
                 [
-                    'name' => 'Collection Report', 
+                    'name' => 'Edits After Print', 
                     'icon' => 'fa fa-money', 
-                    'url'=> 'collection-report', 
-                    'permission' => 'collection-report',
+                    'url'=> 'edits-after-print-report', 
+                    'permission' => 'edits-after-print-report',
                 ],
+                // [
+                //     'name' => 'Collection Report', 
+                //     'icon' => 'fa fa-money', 
+                //     'url'=> 'collection-report', 
+                //     'permission' => 'collection-report',
+                // ],
             ],
         ],
     ];

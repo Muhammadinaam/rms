@@ -201,17 +201,6 @@ class ReportsController extends Controller
         ->whereBetween('order_datetime', [$from_date, $to_date])
         ->where($orders_table.'.order_status_id', 3)
         
-        ->select(
-            $orders_table.'.id',
-            $orders_table.'.order_id',
-            $orders_table.'.ent_remarks',
-            $orders_table.'.received_through',
-            'order_types.name as order_type',
-            DB::raw('sum('.$orders_table.'.cover) as cover'),
-            DB::raw('sum('.$orders_table.'.discount) as discount'),
-            DB::raw('sum('.$orders_table.'.sales_tax) as sales_tax'),
-            DB::raw('sum('.$orders_table.'.order_amount_inc_st) as amount')
-        )
         ->join('order_types', 'order_types.id', '=', $orders_table.'.order_type_id');
         
         $totals_row = $query->select(
@@ -220,6 +209,7 @@ class ReportsController extends Controller
             DB::raw('null as ent_remarks'),
             DB::raw('null as received_through'),
             DB::raw('null as order_type'),
+            DB::raw('null as closing_time'),
             DB::raw('sum('.$orders_table.'.cover) as cover'),
             DB::raw('sum('.$orders_table.'.discount) as discount'),
             DB::raw('sum('.$orders_table.'.sales_tax) as sales_tax'),
@@ -232,7 +222,7 @@ class ReportsController extends Controller
             $orders_table.'.ent_remarks',
             $orders_table.'.received_through',
             'order_types.name as order_type',
-
+            $orders_table.'.closing_time',
             $orders_table.'.cover',
             $orders_table.'.discount',
             $orders_table.'.sales_tax',
@@ -277,6 +267,22 @@ class ReportsController extends Controller
 
         return $data;
 
+    }
+
+    public function editsAfterPrintReport()
+    {
+        $from_date = \Carbon\Carbon::parse( request()->from_date )->format('Y-m-d H:i:s');
+        $to_date = \Carbon\Carbon::parse( request()->to_date )->format('Y-m-d H:i:s');
+        $show_actual = request()->s_a;
+
+        $show_actual = filter_var($show_actual, FILTER_VALIDATE_BOOLEAN);
+
+        return DB::table('edits_after_print_details')
+                    ->select('edits_after_print_details.*', 'users1.name as edited_by_name', 'users2.name as approved_by_name')
+                    ->whereBetween('edits_after_print_details.created_at', [$from_date, $to_date])
+                    ->join('users as users1', 'users1.id', '=', 'edits_after_print_details.edited_by')
+                    ->join('users as users2', 'users2.id', '=', 'edits_after_print_details.approved_by')
+                    ->get();
     }
 
     public function collectionReport()
