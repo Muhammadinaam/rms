@@ -604,6 +604,16 @@ class OrdersController extends Controller
         unset($to['is_printed_for_customer']);
 
         $to['order_id'] = $order_id;
+
+        $duplicate_order = $connection->table($master_table)
+            ->where('order_id', $order_id)
+            ->first();
+
+        if($duplicate_order != null)
+        {
+            throw new \Exception('This Order has already been closed');
+        }
+
         $master_id = $connection->table($master_table)
                         ->insertGetId($to);
 
