@@ -563,7 +563,49 @@ class OrdersController extends Controller
 
     public function reduceOrder($order_id)
     {
-        # code...
+        $order = DB::table('tos')->where('id', $order_id)->first();
+        //$order_details = DB::table('tos_details')->where('to_id', $order_id)->get();
+
+        $order_amount_ex_st = $order->order_amount_ex_st;
+
+        $st_rate = (($order->order_amount_inc_st / $order->order_amount_ex_st)*100) - 100;
+
+        $new_item = DB::table('items')
+            ->where('price', '<', $order_amount_ex_st)
+            //->orderBy('price', 'asc')
+            ->orderBy(DB::raw('RAND()'))
+            ->first();
+
+        if($new_item == null)
+        {
+            return;
+        }
+
+
+
+        DB::table('tos')
+            ->where('id', $order_id)
+            ->update([
+                'cover' => 1,
+                'order_amount_ex_st' => $new_item->price,
+                'sales_tax' => $new_item->price * $st_rate / 100,
+                'order_amount_inc_st' => $new_item->price + ($new_item->price * $st_rate / 100),
+                'order_amount_before_discount' => $new_item->price,
+                'discount' => 0,
+                'discount_allowed_by' => null,
+                
+            ]);
+
+            DB::table('tos_details')->where('to_id', $order_id)->delete();
+
+            DB::table('tos_details')
+                ->insert([
+                    'to_id' => $order_id,
+                    'item_id' => $new_item->id,
+                    'qty' => 1,
+                    'rate' => $new_item->price,
+                    'amount' => $new_item->price,
+                ]);
     }
 
     public function orderToFinalTable($order_id, $table, $connection_name = null)
@@ -611,7 +653,17 @@ class OrdersController extends Controller
 
         if($duplicate_order != null)
         {
-            throw new \Exception('This Order has already been closed');
+            //throw new \Exception('This Order has already been closed');
+
+            
+
+            $connection->table($master_table)
+                ->where('order_id', $order_id)
+                ->delete();
+
+            $connection->table($detail_table)
+                ->where($foreign_key, $order_id)
+                ->delete();
         }
 
         $master_id = $connection->table($master_table)
