@@ -87,9 +87,9 @@ class OrdersController extends Controller
                     'discount_allowed_by' => Auth::user()->id,
                     'order_amount_before_discount' => $order['order_amount_before_discount'],
                     'discount' => $order['discount'],
-                    'order_amount_ex_st' => $order['order_amount_ex_st'],
+                    'order_amount_ex_st' => $order['order_amount_before_discount'] - $order['discount'],
                     'sales_tax' => $order['sales_tax'],
-                    'order_amount_inc_st' => $order['order_amount_inc_st'],
+                    'order_amount_inc_st' => $order['order_amount_ex_st'] + $order['sales_tax'],
                 ]);
 
                 
