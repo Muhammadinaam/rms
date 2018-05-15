@@ -163,11 +163,13 @@ class ReportsController extends Controller
             )
             ->leftJoin('items', 'items.id', '=', $details_table .'.item_id')
             ->select(
+                'items.category',
+                'items.item_group',
                 'items.name',
                 DB::raw('sum('.$details_table .'.qty) as qty'),
                 DB::raw('sum('.$details_table .'.amount) as amount')
             )
-            ->groupBy(DB::raw('items.name WITH ROLLUP'))
+            ->groupBy(DB::raw('items.category, items.item_group, items.name'))
             ->get();
     }
 
@@ -289,6 +291,21 @@ class ReportsController extends Controller
     {
         $from_date = \Carbon\Carbon::parse( request()->from_date )->format('Y-m-d H:i:s');
         $to_date = \Carbon\Carbon::parse( request()->to_date )->format('Y-m-d H:i:s');
+    }
+
+    public function cancelledOrdersReport()
+    {
+        $from_date = \Carbon\Carbon::parse( request()->from_date )->format('Y-m-d H:i:s');
+        $to_date = \Carbon\Carbon::parse( request()->to_date )->format('Y-m-d H:i:s');
+        //$show_actual = request()->s_a;
+
+        return DB::table('tos')
+                ->select('tos.id', 'tos.order_amount_inc_st as amount', 'users.name as cancelled_by', 'tos.cancellation_remarks')
+                ->leftJoin('users', 'users.id', '=', 'tos.cancelled_by')
+                ->whereBetween('tos.order_datetime', [$from_date, $to_date])
+                ->where('tos.order_status_id', 4)
+                ->orderBy('tos.id')
+                ->get();
     }
 
 }

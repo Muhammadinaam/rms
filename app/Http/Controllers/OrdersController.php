@@ -61,7 +61,7 @@ class OrdersController extends Controller
                     return ['success' => 'false', 'message' => 'Please enter User ID and Password'];
                 }
                 
-                $auth_for_edit_after_print = $this->AuthForEditAfterPrint( $other_info['user_id'], $other_info['password'] );
+                $auth_for_edit_after_print = $this->HasPermissionByUserIDandPassword( $other_info['user_id'], $other_info['password'], 'edit-discount-after-print' );
 
                 if( $auth_for_edit_after_print == 0 )
                 {
@@ -135,7 +135,7 @@ class OrdersController extends Controller
         return json_encode($order);
     }
 
-    public function AuthForEditAfterPrint($email, $password)
+    public function HasPermissionByUserIDandPassword($email, $password, $permission_slug)
     {
         $ret = 0;
 
@@ -155,7 +155,7 @@ class OrdersController extends Controller
             $permission = DB::table('user_permissions')
                 ->join('permissions', 'permissions.id', '=', 'user_permissions.permission_id')
                 ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.slug', 'edit-discount-after-print')
+                ->where('permissions.slug', $permission_slug)
                 ->first();
 
             if($permission != null)
@@ -377,7 +377,7 @@ class OrdersController extends Controller
                         return ['success' => 'false', 'message' => 'Please enter User ID and Password'];
                     }
                     
-                    $auth_for_edit_after_print = $this->AuthForEditAfterPrint( $other_info['user_id'], $other_info['password'] );
+                    $auth_for_edit_after_print = $this->HasPermissionByUserIDandPassword( $other_info['user_id'], $other_info['password'], 'edit-discount-after-print' );
 
                     if( $auth_for_edit_after_print == 0 )
                     {
@@ -442,6 +442,7 @@ class OrdersController extends Controller
 
             DB::beginTransaction();
 
+
             $order_data = [
                 'order_status_id' => $status
             ];
@@ -459,9 +460,7 @@ class OrdersController extends Controller
                 $order_data['closing_time'] = \Carbon\Carbon::now()->format('Y-m-d H:i:s');
             }
 
-            DB::table('tos')
-                ->where('id', $order_id)
-                ->update($order_data);
+            
 
 
 
@@ -475,8 +474,23 @@ class OrdersController extends Controller
 
             if($status == 4)
             {
+
+                $cancel_order_auth = $this->HasPermissionByUserIDandPassword( request()->user_id, request()->password, 'cancel-order' );
+
+                if( $cancel_order_auth == 0 )
+                {
+                    return ['success' => 'false', 'message' => 'User ID / Password is not correct or does not have permission to Cancel Order'];
+                }
+
+                $order_data['cancelled_by'] = $cancel_order_auth;
+                $order_data['cancellation_remarks'] = request()->remarks;
+
                 $this->insertPrintJob('Order Cancelled', $order_id, 0);
             }
+
+            DB::table('tos')
+                ->where('id', $order_id)
+                ->update($order_data);
 
 
 
@@ -644,6 +658,9 @@ class OrdersController extends Controller
         $to = json_decode( json_encode( $to ), true);
         unset($to['id']);
         unset($to['is_printed_for_customer']);
+        unset($to['cancelled_by']);
+        unset($to['cancellation_remarks']);
+        
 
         $to['order_id'] = $order_id;
 

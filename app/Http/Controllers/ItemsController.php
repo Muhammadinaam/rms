@@ -65,6 +65,7 @@ class ItemsController extends Controller
             
 
             $item->category = request()->category;
+            $item->item_group = request()->group;
             $item->name = request()->name;
             $item->code = request()->code;
             $item->unit = request()->unit;

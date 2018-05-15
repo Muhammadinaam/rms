@@ -97,6 +97,12 @@ class UsersController extends Controller
                     'url'=> 'edits-after-print-report', 
                     'permission' => 'edits-after-print-report',
                 ],
+                [
+                    'name' => 'Cancelled Orders', 
+                    'icon' => 'fa fa-money', 
+                    'url'=> 'cancelled-orders-report', 
+                    'permission' => 'cancelled-orders-report',
+                ],
                 // [
                 //     'name' => 'Collection Report', 
                 //     'icon' => 'fa fa-money', 
