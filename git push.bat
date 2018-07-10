@@ -1,3 +1,4 @@
+git commit -m "h"
 git pull
 
 git add .
