@@ -538,6 +538,8 @@ class OrdersController extends Controller
 
             if($received_through == 'Cash2' && config('app.is_client_bad') == true)
             {
+                
+
                 // tax chori... put original in db2 and fake in db1
                 $this->orderToFinalTable($order_id, 'invoices', 'db2');
 
@@ -700,8 +702,13 @@ class OrdersController extends Controller
                 ->insert($to_detail_row);
         }
 
+        
+        
         $connection->commit();
-
+        
+        // testing
+        // if($connection_name == null)
+        //     throw new \Exception("Error Processing Request", 1);
         
 
     }
