@@ -243,6 +243,17 @@ class OrdersController extends Controller
             {
                 $id = DB::table('tos')
                         ->insertGetId($order_data);
+
+                DB::table('tos')->sharedLock()->get();
+
+                $max_id = DB::table('tos')->max('id');
+        
+                if($max_id == ''){
+                    throw new \Exception('Unable to generate new order id');
+                }
+        
+                $id = $max_id + 1;
+
             }
             else 
             {
