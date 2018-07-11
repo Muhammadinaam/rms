@@ -103,6 +103,12 @@ class UsersController extends Controller
                     'url'=> 'cancelled-orders-report', 
                     'permission' => 'cancelled-orders-report',
                 ],
+                [
+                    'name' => 'Invoices Printing', 
+                    'icon' => 'fa fa-print', 
+                    'url'=> 'invoices-printing', 
+                    'permission' => 'invoices-printing',
+                ],
                 // [
                 //     'name' => 'Collection Report', 
                 //     'icon' => 'fa fa-money', 

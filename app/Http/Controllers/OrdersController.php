@@ -685,9 +685,23 @@ class OrdersController extends Controller
                 ->delete();
         }
 
-        $master_id = $connection->table($master_table)
-                        ->insertGetId($to);
+        $max_id = '';
 
+        $connection->table($master_table)->sharedLock()->get();
+
+        $max_id = $connection->table($master_table)->max('id');
+
+        if($max_id == ''){
+            throw new \Exception('Unable to generate invoice id');
+        }
+
+        $id = $max_id + 1;
+        $to['id'] = $id;
+
+        $connection->table($master_table)
+            ->insert($to);
+        
+        $master_id = $id;
         
 
         foreach ($to_detail as $to_detail_row) {
@@ -703,12 +717,12 @@ class OrdersController extends Controller
         }
 
         
-        
-        $connection->commit();
-        
         // testing
         // if($connection_name == null)
         //     throw new \Exception("Error Processing Request", 1);
+        
+        $connection->commit();
+        
         
 
     }
@@ -753,5 +767,37 @@ class OrdersController extends Controller
 
         return 'done';
         
+    }
+
+    public function invoicesPrinting()
+    {
+        try
+        {
+
+            $invoice_id_from = request()->invoice_id_from;
+            $invoice_id_to = request()->invoice_id_to;
+    
+            $invoices_print_job = DB::table('invoices')
+                                        ->whereBetween('id', [$invoice_id_from, $invoice_id_to])
+                                        ->select(
+                                            DB::raw("'Invoice Print' as print_type"),
+                                            'order_id as entity_id',
+                                            DB::raw("'0' as is_reprint")
+                                        )
+                                        ->get()->toArray();
+
+            $invoices_print_job = json_decode(json_encode($invoices_print_job), true);
+    
+            DB::table('print_jobs')
+                ->insert($invoices_print_job);
+    
+            return [ 'success' => true, 'message' => 'Total invoices printed: ' . count($invoices_print_job) ];
+        }
+        catch(\Exception $ex)
+        {
+            throw $ex;
+            return [ 'success' => false, 'message' => 'Error occurred. Please try again. Error: ' . $ex->getMessage() ];
+        }
+
     }
 }
