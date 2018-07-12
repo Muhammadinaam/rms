@@ -241,8 +241,7 @@ class OrdersController extends Controller
 
             if( $is_new_order )
             {
-                $id = DB::table('tos')
-                        ->insertGetId($order_data);
+                
 
                 DB::table('tos')->sharedLock()->get();
 
@@ -253,6 +252,11 @@ class OrdersController extends Controller
                 }
         
                 $id = $max_id + 1;
+
+                $order_data['id'] = $id;
+
+                DB::table('tos')
+                        ->insert($order_data);
 
             }
             else 
@@ -584,6 +588,13 @@ class OrdersController extends Controller
             
         } catch (\Exception $e) {
             DB::rollBack();
+
+            DB::table('invoices')->where('order_id', $order_id)->delete();
+            DB::table('ent_bills')->where('order_id', $order_id)->delete();
+
+            DB::connection('db2')->table('invoices')->where('order_id', $order_id)->delete();
+            DB::connection('db2')->table('ent_bills')->where('order_id', $order_id)->delete();
+
             return ['success' => false, 'message' => 'Error Occurred: ' . $e->getMessage()];
         }
     }
