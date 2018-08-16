@@ -477,7 +477,8 @@ class OrdersController extends Controller
 
             
 
-
+            
+            
 
             if($status == 3 || $status == 4)
             {
@@ -486,6 +487,8 @@ class OrdersController extends Controller
                     ->where('current_order_id', $order_id)
                     ->update(['current_order_id' => null]);
             }
+
+            
 
             if($status == 4)
             {
@@ -546,6 +549,8 @@ class OrdersController extends Controller
 
 
             $close_order_result = $this->changeOrderStatus($order_id, 3);
+
+            
 
             if($close_order_result['success'] == false)
                 throw new \Exception( $close_order_result['message'], 1);
