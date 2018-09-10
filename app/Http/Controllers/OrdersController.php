@@ -126,6 +126,7 @@ class OrdersController extends Controller
                                 ->select('tos_details.id as detail_id',
                                     'tos_details.item_id',
                                     'items.name as item_name',
+                                    'tos_details.item_notes',
                                     'tos_details.qty',
                                     'tos_details.rate'
                                 )
@@ -335,6 +336,7 @@ class OrdersController extends Controller
                         ->insert([
                             'to_id' => $id,
                             'item_id' => $order_detail['item_id'],
+                            'item_notes' => $order_detail['item_notes'],
                             'qty' => $order_detail['qty'],
                             'rate' => $order_detail['rate'],
                             'amount' => $order_detail['qty']*$order_detail['rate'],
@@ -556,16 +558,20 @@ class OrdersController extends Controller
                 throw new \Exception( $close_order_result['message'], 1);
 
 
-            if($received_through == 'Cash2' && config('app.is_client_bad') == true)
+            if($received_through == 'Cash2')
             {
-                
-
-                // tax chori... put original in db2 and fake in db1
+                // tax chori... put original in db2
                 $this->orderToFinalTable($order_id, 'invoices', 'db2');
-
-                //put fake (reduced) in db1
-                $this->reduceOrder($order_id);
-                $this->orderToFinalTable($order_id, 'invoices');
+                
+                if(config('app.is_client_bad') == true) //put fake (reduced) in db1
+                {
+                    $this->reduceOrder($order_id);
+                    $this->orderToFinalTable($order_id, 'invoices');
+                }
+                else if(config('app.is_client_very_bad') == true) //dont save order in db1
+                {
+                    // do nothing
+                }                
 
             }
             else if($received_through == 'Ent')
@@ -736,6 +742,7 @@ class OrdersController extends Controller
             
             unset( $to_detail_row['id'] );
             unset( $to_detail_row['to_id'] );
+            unset( $to_detail_row['item_notes'] );
 
             $to_detail_row[$foreign_key] = $master_id;
 

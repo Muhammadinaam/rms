@@ -8,6 +8,7 @@ return [
      */
 
     'is_client_bad' => env('IS_CLIENT_BAD', false),
+    'is_client_very_bad' => env('IS_CLIENT_BAD', false),
 
     /*
     |--------------------------------------------------------------------------
