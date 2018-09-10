@@ -336,7 +336,7 @@ class OrdersController extends Controller
                         ->insert([
                             'to_id' => $id,
                             'item_id' => $order_detail['item_id'],
-                            'item_notes' => $order_detail['item_notes'],
+                            'item_notes' => isset($order_detail['item_notes']) ? $order_detail['item_notes'] : null,
                             'qty' => $order_detail['qty'],
                             'rate' => $order_detail['rate'],
                             'amount' => $order_detail['qty']*$order_detail['rate'],
