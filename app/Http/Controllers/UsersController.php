@@ -109,6 +109,12 @@ class UsersController extends Controller
                     'url'=> 'invoices-printing', 
                     'permission' => 'invoices-printing',
                 ],
+                [
+                    'name' => 'Top and Least Selling Items', 
+                    'icon' => 'fa fa-print', 
+                    'url'=> 'invoices-printing', 
+                    'permission' => 'invoices-printing',
+                ],
                 // [
                 //     'name' => 'Collection Report', 
                 //     'icon' => 'fa fa-money', 
