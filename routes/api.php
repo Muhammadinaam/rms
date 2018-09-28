@@ -69,5 +69,6 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::get('collection-report', 'ReportsController@collectionReport');
     Route::get('cancelled-orders-report', 'ReportsController@cancelledOrdersReport');
     Route::post('invoices-printing', 'OrdersController@invoicesPrinting');
+    Route::get('top-least-selling-items-report', 'ReportsController@TopLeastSellingItemsReport');
 
 });

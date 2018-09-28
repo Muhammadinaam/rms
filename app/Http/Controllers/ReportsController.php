@@ -112,11 +112,49 @@ class ReportsController extends Controller
         }
     }
 
+    public function TopLeastSellingItemsReport()
+    {
+        $from_date = \Carbon\Carbon::parse( request()->from_date )->format('Y-m-d H:i:s');
+        $to_date = \Carbon\Carbon::parse( request()->to_date )->format('Y-m-d H:i:s');
+        $show_actual = request()->s_a;
+
+        $show_actual = filter_var($show_actual, FILTER_VALIDATE_BOOLEAN);
+
+        if($show_actual == true)
+        {
+            $this->createTempTables($from_date, $to_date);
+        }
+
+        $query = DB::table($this->invoices_details_table)
+        ->leftJoin('items', 'items.id', '=', $this->invoices_details_table . '.item_id')
+        ->select('items.name as name')
+        ->groupBy('items.name')
+        ->limit(5);
+
+        $top_selling_items_by_qty = (clone $query)->addSelect(DB::raw('sum('.$this->invoices_details_table.'.qty) as value'))
+                                ->orderBy('value', 'desc')
+                                ->get();
+
+        $top_selling_items_by_amount = (clone $query)->addSelect(DB::raw('sum('.$this->invoices_details_table.'.amount) as value'))
+                                ->orderBy('value', 'desc')
+                                ->get();
+
+        $least_selling_items_by_qty = (clone $query)->addSelect(DB::raw('sum('.$this->invoices_details_table.'.qty) as value'))
+                                ->orderBy('value', 'asc')
+                                ->get();
+
+        $least_selling_items_by_amount = (clone $query)->addSelect(DB::raw('sum('.$this->invoices_details_table.'.amount) as value'))
+                                ->orderBy('value', 'asc')
+                                ->get();
+
+        return compact('top_selling_items_by_qty', 
+        'top_selling_items_by_amount', 
+        'least_selling_items_by_qty',
+        'least_selling_items_by_amount');
+    }
 
     public function salesReportByItem()
     {
-        
-
         $from_date = \Carbon\Carbon::parse( request()->from_date )->format('Y-m-d H:i:s');
         $to_date = \Carbon\Carbon::parse( request()->to_date )->format('Y-m-d H:i:s');
         $show_actual = request()->s_a;

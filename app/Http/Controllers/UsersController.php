@@ -110,11 +110,17 @@ class UsersController extends Controller
                     'permission' => 'invoices-printing',
                 ],
                 [
-                    'name' => 'Top and Least Selling Items', 
+                    'name' => 'Top and Least Items', 
                     'icon' => 'fa fa-print', 
-                    'url'=> 'invoices-printing', 
-                    'permission' => 'invoices-printing',
+                    'url'=> 'top-least-selling-items-report', 
+                    'permission' => 'top-least-selling-items-report',
                 ],
+                // [
+                //     'name' => 'X Report', 
+                //     'icon' => 'fa fa-print', 
+                //     'url'=> 'x-report', 
+                //     'permission' => 'x-report',
+                // ],
                 // [
                 //     'name' => 'Collection Report', 
                 //     'icon' => 'fa fa-money', 
