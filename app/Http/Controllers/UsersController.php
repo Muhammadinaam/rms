@@ -115,12 +115,18 @@ class UsersController extends Controller
                     'url'=> 'top-least-selling-items-report', 
                     'permission' => 'top-least-selling-items-report',
                 ],
-                // [
-                //     'name' => 'X Report', 
-                //     'icon' => 'fa fa-print', 
-                //     'url'=> 'x-report', 
-                //     'permission' => 'x-report',
-                // ],
+                [
+                    'name' => 'X Report', 
+                    'icon' => 'fa fa-print', 
+                    'url'=> 'x-report', 
+                    'permission' => 'x-report',
+                ],
+                [
+                    'name' => 'Rating Report', 
+                    'icon' => 'fa fa-print', 
+                    'url'=> 'rating-report', 
+                    'permission' => 'rating-report',
+                ],
                 // [
                 //     'name' => 'Collection Report', 
                 //     'icon' => 'fa fa-money', 
