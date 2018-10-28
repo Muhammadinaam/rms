@@ -30,6 +30,22 @@ class RatingsController extends Controller
     {
         try
         {
+            $order = DB::table('tos')
+                ->where('id', request()->order_id)
+                ->first();
+
+            if( $order == null )
+                return ['success' => false, 'message' => 'Order ID: ' . request()->order_id . ' not found' ];
+
+            if( request()->food_rating > 5 || request()->food_rating < 0 )
+                return ['success' => false, 'message' => 'Please enter rating between 0 and 5' ];
+
+            if( request()->service_rating > 5 || request()->service_rating < 0 )
+                return ['success' => false, 'message' => 'Please enter rating between 0 and 5' ];
+
+            if( request()->ambiance_rating > 5 || request()->ambiance_rating < 0 )
+                return ['success' => false, 'message' => 'Please enter rating between 0 and 5' ];
+
             DB::beginTransaction();
 
             DB::table('ratings')
