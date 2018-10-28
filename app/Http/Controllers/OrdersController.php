@@ -26,6 +26,7 @@ class OrdersController extends Controller
         $order_details = $order['order_details'];
         $deleted_details = json_decode( request()->deleted_details, true );
 
+        $order['created_by'] = Auth::user()->id;
         return $this->saveOrder($order, $order_details, $deleted_details);
     }
 
@@ -40,6 +41,7 @@ class OrdersController extends Controller
 
         $other_info = json_decode( request()->other_info, true );
 
+        $order['updated_by'] = Auth::user()->id;
         return $this->saveOrder($order, $order_details, $deleted_details, $other_info);
     }
 
@@ -50,6 +52,7 @@ class OrdersController extends Controller
 
         try
         {
+            DB::beginTransaction();
             
             $order_being_updated = DB::table('tos')->where('id', $order['id'])->first();
 
@@ -93,6 +96,7 @@ class OrdersController extends Controller
                 ]);
 
                 
+            DB::commit();
 
             return ['success' => true, 'message' => 'Saved Successfully'];
         }
@@ -186,6 +190,8 @@ class OrdersController extends Controller
             
 
             $order_data = array();
+            $order_data['created_by'] = isset($order['created_by']) ? $order['created_by'] : null;
+            $order_data['updated_by'] = isset($order['updated_by']) ? $order['updated_by'] : null;
             $order_data['order_type_id'] = $order['order_type'];
             $order_data['cover'] = isset($order['cover']) ? $order['cover'] : null;
 
@@ -248,7 +254,7 @@ class OrdersController extends Controller
 
                 $max_id = DB::table('tos')->max('id');
         
-                if($max_id == ''){
+                if($max_id == '' && DB::table('tos')->count() != 0){
                     throw new \Exception('Unable to generate new order id');
                 }
         
@@ -404,6 +410,7 @@ class OrdersController extends Controller
                     DB::table('edits_after_print_details')
                         ->insert([
                             'order_id' => $order['id'],
+                            'to_edit_id' => $to_edit_id,
                             'edit_type' => 'Order Edited',
                             'remarks' => $other_info['remarks'],
                             'before_amount' => $order_being_updated->order_amount_inc_st,
@@ -695,6 +702,8 @@ class OrdersController extends Controller
         unset($to['is_printed_for_customer']);
         unset($to['cancelled_by']);
         unset($to['cancellation_remarks']);
+        unset($to['created_by']);
+        unset($to['updated_by']);
         
 
         $to['order_id'] = $order_id;
@@ -724,7 +733,7 @@ class OrdersController extends Controller
 
         $max_id = $connection->table($master_table)->max('id');
 
-        if($max_id == ''){
+        if($max_id == '' && $connection->table($master_table)->count() != 0){
             throw new \Exception('Unable to generate invoice id');
         }
 
@@ -833,5 +842,17 @@ class OrdersController extends Controller
             return [ 'success' => false, 'message' => 'Error occurred. Please try again. Error: ' . $ex->getMessage() ];
         }
 
+    }
+
+    public function getOrderEdit($id)
+    {
+        $to_edit = DB::table('tos_edits')->where('id', $id)->first();
+        $to_edit_details = DB::table('tos_edits_details')
+                                ->select('items.name as item_name', 'qty', 'rate', 'amount', 'edit_type')
+                                ->where('to_edit_id', $id)
+                                ->join('items', 'items.id', '=', 'tos_edits_details.item_id')
+                                ->get();
+
+        return compact('to_edit', 'to_edit_details');
     }
 }

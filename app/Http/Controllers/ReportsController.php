@@ -238,18 +238,22 @@ class ReportsController extends Controller
     public function getReportByOrders($orders_table, $from_date, $to_date)
     {
         $query = DB::table($orders_table)
-        ->whereBetween('order_datetime', [$from_date, $to_date])
+        ->leftJoin('tos', 'tos.id', '=', $orders_table.'.order_id')
+        ->leftJoin('users', 'users.id', '=', 'tos.created_by')
+        ->whereBetween($orders_table.'.order_datetime', [$from_date, $to_date])
         ->where($orders_table.'.order_status_id', 3)
         
         ->join('order_types', 'order_types.id', '=', $orders_table.'.order_type_id');
         
         $totals_row = $query->select(
             DB::raw('null as id'),
+            DB::raw('null as order_datetime'),
             DB::raw('null as order_id'),
             DB::raw('null as ent_remarks'),
             DB::raw('null as received_through'),
             DB::raw('null as order_type'),
             DB::raw('null as closing_time'),
+            DB::raw('null as created_by'),
             DB::raw('sum('.$orders_table.'.cover) as cover'),
             DB::raw('sum('.$orders_table.'.discount) as discount'),
             DB::raw('sum('.$orders_table.'.sales_tax) as sales_tax'),
@@ -258,11 +262,13 @@ class ReportsController extends Controller
 
         $rows = $query->select(
             $orders_table.'.id',
+            $orders_table.'.order_datetime',
             $orders_table.'.order_id',
             $orders_table.'.ent_remarks',
             $orders_table.'.received_through',
             'order_types.name as order_type',
             $orders_table.'.closing_time',
+            'users.name as created_by',
             $orders_table.'.cover',
             $orders_table.'.discount',
             $orders_table.'.sales_tax',
@@ -344,6 +350,28 @@ class ReportsController extends Controller
                 ->where('tos.order_status_id', 4)
                 ->orderBy('tos.id')
                 ->get();
+    }
+
+    public function getInvoiceData()
+    {
+        $show_actual = request()->s_a;
+
+        $show_actual = filter_var($show_actual, FILTER_VALIDATE_BOOLEAN);
+
+        if($show_actual == true)
+        {
+            $this->createTempTables($from_date, $to_date);
+        }
+
+        $invoice_id = request()->invoice_id;
+
+        $invoice_data = DB::table($this->invoices_details_table)
+                            ->select('items.name as item_name', 'qty', 'rate', 'amount')
+                            ->where('invoice_id', $invoice_id)
+                            ->join('items', $this->invoices_details_table . '.item_id', '=', 'items.id')
+                            ->get();
+
+        return $invoice_data;
     }
 
 }

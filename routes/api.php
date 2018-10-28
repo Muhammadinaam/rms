@@ -53,6 +53,7 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::post('save-order-discount', 'OrdersController@saveOrderDiscount');
     Route::post('print-for-customer/{order_id}', 'OrdersController@printForCustomer');
     Route::post('reprint-for-kitchens/{order_id}', 'OrdersController@reprintForKitchens');
+    Route::get('get_order_edit/{id}', 'OrdersController@getOrderEdit');
 
     Route::get('open-orders', 'OrdersController@openOrders');
 
@@ -70,5 +71,9 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::get('cancelled-orders-report', 'ReportsController@cancelledOrdersReport');
     Route::post('invoices-printing', 'OrdersController@invoicesPrinting');
     Route::get('top-least-selling-items-report', 'ReportsController@TopLeastSellingItemsReport');
+    Route::get('get-invoice-data', 'ReportsController@getInvoiceData');
+
+    Route::get('ratings-report', 'RatingsController@index');
+    Route::post('save-rating', 'RatingsController@saveRating');
 
 });

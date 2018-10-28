@@ -13,7 +13,17 @@ class ItemsController extends Controller
 
     public function index()
     {
-    	$items = Item::orderBy('code')->orderBy('category')->get();
+        $items = Item::orderBy('code')
+                    ->orderBy('category');
+
+        $show_inactive_also = request()->has('show_inactive_also') && request()->show_inactive_also == 1 ? true : false;
+
+        if($show_inactive_also == false)
+        {
+            $items->where('is_activated', '=', 1);
+        }
+
+        $items = $items->get();
     	return $items;
     }
 
@@ -65,11 +75,12 @@ class ItemsController extends Controller
             
 
             $item->category = request()->category;
-            $item->item_group = request()->group;
+            $item->item_group = request()->item_group;
             $item->name = request()->name;
             $item->code = request()->code;
             $item->unit = request()->unit;
             $item->price = request()->price;
+            $item->is_activated = request()->is_activated == 'false' ? 0 : 1;
 
             $item->save();
 
