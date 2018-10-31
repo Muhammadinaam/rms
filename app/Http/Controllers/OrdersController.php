@@ -190,8 +190,15 @@ class OrdersController extends Controller
             
 
             $order_data = array();
-            $order_data['created_by'] = isset($order['created_by']) ? $order['created_by'] : null;
-            $order_data['updated_by'] = isset($order['updated_by']) ? $order['updated_by'] : null;
+            if(isset($order['created_by']))
+            {
+                $order_data['created_by'] = $order['created_by'];
+            }
+            if(isset($order['updated_by']))
+            {
+                $order_data['updated_by'] = $order['updated_by'];
+            }
+
             $order_data['order_type_id'] = $order['order_type'];
             $order_data['cover'] = isset($order['cover']) ? $order['cover'] : null;
 
@@ -410,7 +417,7 @@ class OrdersController extends Controller
                     DB::table('edits_after_print_details')
                         ->insert([
                             'order_id' => $order['id'],
-                            'to_edit_id' => $to_edit_id,
+                            'to_edit_id' => $tos_edit_id,
                             'edit_type' => 'Order Edited',
                             'remarks' => $other_info['remarks'],
                             'before_amount' => $order_being_updated->order_amount_inc_st,
