@@ -18,7 +18,6 @@ class ReportsController extends Controller
     public $ent_details_table = 'ent_bills_details';
     public $ent_details_fk = 'ent_bill_id';
 
-
     public function createTempTables($from_date, $to_date)
     {
         {
@@ -355,12 +354,13 @@ class ReportsController extends Controller
     public function getInvoiceData()
     {
         $show_actual = request()->s_a;
+        $invoice_datetime = request()->invoice_datetime;
 
         $show_actual = filter_var($show_actual, FILTER_VALIDATE_BOOLEAN);
 
         if($show_actual == true)
         {
-            $this->createTempTables($from_date, $to_date);
+            $this->createTempTables($invoice_datetime, $invoice_datetime);
         }
 
         $invoice_id = request()->invoice_id;

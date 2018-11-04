@@ -32,6 +32,12 @@ class OrdersController extends Controller
 
     public function update($id)
     {
+        //check if order is already closed
+        $order = DB::table('tos')->where('id', $id)->first();
+        if($order->order_status_id == 3)
+        {
+            return ['success' => false, 'message' => 'Already closed order cannot be edited'];
+        }
 
         $order = json_decode( request()->order, true );
         $order_details = $order['order_details'];
@@ -580,6 +586,7 @@ class OrdersController extends Controller
                 if(config('app.is_client_bad') == true) //put fake (reduced) in db1
                 {
                     $this->reduceOrder($order_id);
+                    // throw new \Exception( 'test exception', 1);
                     $this->orderToFinalTable($order_id, 'invoices');
                 }
                 else if(config('app.is_client_very_bad') == true) //dont save order in db1
@@ -614,11 +621,11 @@ class OrdersController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            DB::table('invoices')->where('order_id', $order_id)->delete();
-            DB::table('ent_bills')->where('order_id', $order_id)->delete();
+            // DB::table('invoices')->where('order_id', $order_id)->delete();
+            // DB::table('ent_bills')->where('order_id', $order_id)->delete();
 
-            DB::connection('db2')->table('invoices')->where('order_id', $order_id)->delete();
-            DB::connection('db2')->table('ent_bills')->where('order_id', $order_id)->delete();
+            // DB::connection('db2')->table('invoices')->where('order_id', $order_id)->delete();
+            // DB::connection('db2')->table('ent_bills')->where('order_id', $order_id)->delete();
 
             return ['success' => false, 'message' => 'Error Occurred: ' . $e->getMessage()];
         }
@@ -723,6 +730,7 @@ class OrdersController extends Controller
         {
             //throw new \Exception('This Order has already been closed');
 
+            return; // dont insert/update data if it already exists (lets see major rizwan problem is solved or not)
             
 
             $connection->table($master_table)
@@ -730,22 +738,27 @@ class OrdersController extends Controller
                 ->delete();
 
             $connection->table($detail_table)
-                ->where($foreign_key, $order_id)
+                ->where($foreign_key, $duplicate_order->id)
                 ->delete();
+
+            $to['id'] = $duplicate_order->id;
         }
+        else
+        {
+            $max_id = '';
 
-        $max_id = '';
+            $connection->table($master_table)->sharedLock()->get();
 
-        $connection->table($master_table)->sharedLock()->get();
+            $max_id = $connection->table($master_table)->max('id');
 
-        $max_id = $connection->table($master_table)->max('id');
+            if($max_id == '' && $connection->table($master_table)->count() != 0){
+                throw new \Exception('Unable to generate invoice id');
+            }
 
-        if($max_id == '' && $connection->table($master_table)->count() != 0){
-            throw new \Exception('Unable to generate invoice id');
+            $id = $max_id + 1;
+            $to['id'] = $id;
         }
-
-        $id = $max_id + 1;
-        $to['id'] = $id;
+        
 
         $connection->table($master_table)
             ->insert($to);
