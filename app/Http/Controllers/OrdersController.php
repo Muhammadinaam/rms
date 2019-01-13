@@ -254,10 +254,12 @@ class OrdersController extends Controller
 
             $order_data['discount'] = 0;
             $order_data['order_amount_before_discount'] = $amount_before_discount;
+
+            $sales_tax = $amount_before_discount * $order['sales_tax_rate']/100;
             
             $order_data['order_amount_ex_st'] = $amount_before_discount;
-            $order_data['sales_tax'] = $order['sales_tax'];
-            $order_data['order_amount_inc_st'] = $amount_before_discount + $order['sales_tax'];
+            $order_data['sales_tax'] = $sales_tax;
+            $order_data['order_amount_inc_st'] = $amount_before_discount + $sales_tax;
 
             if( $is_new_order )
             {
@@ -277,6 +279,10 @@ class OrdersController extends Controller
 
                 DB::table('tos')
                         ->insert($order_data);
+
+                DB::table('tos_details')
+                    ->where('to_id', $id)
+                    ->delete();
 
             }
             else 
@@ -436,6 +442,10 @@ class OrdersController extends Controller
             }
 
 
+            if( $this->IsOrderAmountCorrect($id) == false )
+            {
+                throw new \Exception('Order Amounts are not correct');
+            } 
 
 
             DB::commit();
@@ -678,6 +688,22 @@ class OrdersController extends Controller
                 ]);
     }
 
+    private function IsOrderAmountCorrect($order_id)
+    {
+        $order = DB::table('tos')->where('id', $order_id)->first();
+        $order_details = DB::table('tos_details')->where('to_id', $order_id)->get();
+
+        $order_amount_before_discount = 0;
+        foreach($order_details as $order_detail)
+        {
+            $order_amount_before_discount += $order_detail->qty * $order_detail->rate;
+        }
+
+        //throw new \Exception($order->order_amount_ex_st);
+
+        return $order_amount_before_discount - $order->order_amount_ex_st == 0;
+    }
+
     public function orderToFinalTable($order_id, $table, $connection_name = null)
     {
         $master_table = $table;
@@ -693,6 +719,11 @@ class OrdersController extends Controller
         {
             $foreign_key = 'ent_bill_id';
         }
+
+        if( $this->IsOrderAmountCorrect($order_id) == false )
+        {
+            throw new \Exception('Order Amounts are not correct');
+        } 
 
         $to = DB::table('tos')
                     ->where('id', $order_id)
@@ -802,11 +833,25 @@ class OrdersController extends Controller
 
     public function printForCustomer($order_id)
     {
+        
+        if( $this->IsOrderAmountCorrect($order_id) == false )
+        {
+            return [
+                'success' => false,
+                'message' => 'Order amounts are not correct',
+            ];
+        } 
+
         DB::table('tos')
             ->where('id', $order_id)
             ->update(['is_printed_for_customer'=>1]);
 
         $this->insertPrintJob('Customer Print', $order_id, 0);
+
+        return [
+            'success' => true,
+            'message' => 'Print command sent',
+        ];
     }
     
     public function reprintForKitchens($order_id)
