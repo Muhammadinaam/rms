@@ -701,7 +701,7 @@ class OrdersController extends Controller
 
         //throw new \Exception($order->order_amount_ex_st);
 
-        return $order_amount_before_discount - $order->order_amount_ex_st == 0;
+        return $order_amount_before_discount - $order->order_amount_before_discount == 0;
     }
 
     public function orderToFinalTable($order_id, $table, $connection_name = null)
