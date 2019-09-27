@@ -90,6 +90,7 @@ class OrdersController extends Controller
                     ]);
             }
 
+
             DB::table('tos')
                 ->where('id', $order['id'])
                 ->update([
@@ -100,7 +101,11 @@ class OrdersController extends Controller
                     'sales_tax' => $order['sales_tax'],
                     'order_amount_inc_st' => $order['order_amount_ex_st'] + $order['sales_tax'],
                 ]);
-
+            
+            if( $this->IsOrderAmountCorrect($order['id']) == false )
+            {
+                throw new \Exception('Order Amounts are not correct');
+            }
                 
             DB::commit();
 
@@ -700,6 +705,11 @@ class OrdersController extends Controller
         }
 
         //throw new \Exception($order->order_amount_ex_st);
+
+        if( $order->order_amount_before_discount - $order->discount + $order->sales_tax != $order->order_amount_inc_st ) {
+            return false;
+        }
+
 
         return $order_amount_before_discount - $order->order_amount_before_discount == 0;
     }
