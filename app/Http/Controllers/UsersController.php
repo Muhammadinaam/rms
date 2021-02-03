@@ -18,8 +18,20 @@ class UsersController extends Controller
         [
             'name' => 'Settings',
             'icon' => 'fa fa-gears',
-            'url' => 'settings',
-            'permission' => 'change_settings',
+            'children' => [
+                [
+                    'name' => 'General Settings', 
+                    'icon' => 'fa fa-gears', 
+                    'url'=> 'settings', 
+                    'permission' => 'change_settings',
+                ],
+                [
+                    'name' => 'Closing Accounts', 
+                    'icon' => 'fa fa-money', 
+                    'url'=> 'closing-accounts', 
+                    'permission' => 'view-closing-accounts-list',
+                ],
+            ]
         ],
         [
             'name' => 'Users', 

@@ -37,6 +37,12 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::post('tables', 'TablesController@store');
     Route::put('tables/{id}', 'TablesController@update');
 
+    Route::get('closing-accounts', 'ClosingAccountController@index');
+    Route::get('closing-accounts/{id}/edit', 'ClosingAccountController@edit');
+    Route::post('closing-accounts', 'ClosingAccountController@store');
+    Route::put('closing-accounts/{id}', 'ClosingAccountController@update');
+    Route::delete('closing-accounts/{id}', 'ClosingAccountController@destroy');
+
     Route::get('free_tables', 'TablesController@freeTables');
 
     Route::get('items', 'ItemsController@index');
@@ -51,7 +57,7 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::post('change-order-status', 'OrdersController@changeOrderStatusApi');
     Route::post('close-order', 'OrdersController@closeOrder');
     Route::post('save-order-discount', 'OrdersController@saveOrderDiscount');
-    Route::post('print-for-customer/{order_id}', 'OrdersController@printForCustomer');
+    Route::post('print-for-customer/{order_id}/{sales_tax_rate}', 'OrdersController@printForCustomer');
     Route::post('reprint-for-kitchens/{order_id}', 'OrdersController@reprintForKitchens');
     Route::get('get_order_edit/{id}', 'OrdersController@getOrderEdit');
 

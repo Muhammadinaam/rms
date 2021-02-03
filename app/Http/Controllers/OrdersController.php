@@ -131,7 +131,9 @@ class OrdersController extends Controller
                         'tos.deliver_to_name',
                         'tos.deliver_to_phone',
                         'tos.deliver_to_address',
-                        'tos.is_printed_for_customer'
+                        'tos.is_printed_for_customer',
+                        'tos.sales_tax',
+                        'tos.order_amount_ex_st',
                     )
                     ->leftJoin('tables', 'tables.id', '=', 'tos.table_id')
                     ->first();
@@ -841,8 +843,23 @@ class OrdersController extends Controller
             ]);
     }
 
-    public function printForCustomer($order_id)
+    private function updateSalesTaxRate($order_id, $sales_tax_rate)
     {
+        $order = DB::table('tos')->find($order_id);
+
+        $sales_tax = $order->order_amount_ex_st * $sales_tax_rate / 100;
+
+        DB::table('tos')
+            ->where('id', $order->id)
+            ->update([
+                'sales_tax' => $sales_tax,
+                'order_amount_inc_st' => $order->order_amount_ex_st + $sales_tax,
+            ]);
+    }
+
+    public function printForCustomer($order_id, $sales_tax_rate)
+    {
+        $this->updateSalesTaxRate($order_id, $sales_tax_rate);
         
         if( $this->IsOrderAmountCorrect($order_id) == false )
         {
