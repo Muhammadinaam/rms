@@ -133,7 +133,7 @@ class OrdersController extends Controller
                         'tos.deliver_to_address',
                         'tos.is_printed_for_customer',
                         'tos.sales_tax',
-                        'tos.order_amount_ex_st',
+                        'tos.order_amount_ex_st'
                     )
                     ->leftJoin('tables', 'tables.id', '=', 'tos.table_id')
                     ->first();
