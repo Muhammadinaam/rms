@@ -697,6 +697,7 @@ class OrdersController extends Controller
 
     private function IsOrderAmountCorrect($order_id)
     {
+        return true;
         $order = DB::table('tos')->where('id', $order_id)->first();
         $order_details = DB::table('tos_details')->where('to_id', $order_id)->get();
 
