@@ -697,7 +697,6 @@ class OrdersController extends Controller
 
     private function IsOrderAmountCorrect($order_id)
     {
-        return true;
         $order = DB::table('tos')->where('id', $order_id)->first();
         $order_details = DB::table('tos_details')->where('to_id', $order_id)->get();
 
@@ -709,12 +708,13 @@ class OrdersController extends Controller
 
         //throw new \Exception($order->order_amount_ex_st);
 
-        if( $order->order_amount_before_discount - $order->discount + $order->sales_tax != $order->order_amount_inc_st ) {
+        $difference = $order->order_amount_before_discount - $order->discount + $order->sales_tax - $order->order_amount_inc_st;
+        if( abs($difference) > 1 ) {
             return false;
         }
 
-
-        return $order_amount_before_discount - $order->order_amount_before_discount == 0;
+        $difference = $order_amount_before_discount - $order->order_amount_before_discount;
+        return abs($difference) > 1 ? false : true;
     }
 
     public function orderToFinalTable($order_id, $table, $connection_name = null)
