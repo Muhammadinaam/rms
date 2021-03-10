@@ -218,7 +218,8 @@ class ReportsController extends Controller
                     ->whereBetween('order_datetime', [$from_date, $to_date])
                     ->select(
                         $this->invoices_table . '.received_through',
-                        DB::raw('sum('.$this->invoices_table.'.order_amount_inc_st) as total_received')
+                        DB::raw('sum('.$this->invoices_table.'.order_amount_inc_st) as total_received'),
+                        DB::raw('sum('.$this->invoices_table.'.cover) as total_cover'),
                     )
                     ->groupBy($this->invoices_table.'.received_through')
                     ->get();
@@ -244,20 +245,20 @@ class ReportsController extends Controller
         
         ->join('order_types', 'order_types.id', '=', $orders_table.'.order_type_id');
         
-        $totals_row = $query->select(
-            DB::raw('null as id'),
-            DB::raw('null as order_datetime'),
-            DB::raw('null as order_id'),
-            DB::raw('null as ent_remarks'),
-            DB::raw('null as received_through'),
-            DB::raw('null as order_type'),
-            DB::raw('null as closing_time'),
-            DB::raw('null as created_by'),
-            DB::raw('sum('.$orders_table.'.cover) as cover'),
-            DB::raw('sum('.$orders_table.'.discount) as discount'),
-            DB::raw('sum('.$orders_table.'.sales_tax) as sales_tax'),
-            DB::raw('sum('.$orders_table.'.order_amount_inc_st) as amount')
-        )->get()->toArray();
+        // $totals_row = $query->select(
+        //     DB::raw('null as id'),
+        //     DB::raw('null as order_datetime'),
+        //     DB::raw('null as order_id'),
+        //     DB::raw('null as ent_remarks'),
+        //     DB::raw('null as received_through'),
+        //     DB::raw('null as order_type'),
+        //     DB::raw('null as closing_time'),
+        //     DB::raw('null as created_by'),
+        //     DB::raw('sum('.$orders_table.'.cover) as cover'),
+        //     DB::raw('sum('.$orders_table.'.discount) as discount'),
+        //     DB::raw('sum('.$orders_table.'.sales_tax) as sales_tax'),
+        //     DB::raw('sum('.$orders_table.'.order_amount_inc_st) as amount')
+        // )->get()->toArray();
 
         $rows = $query->select(
             $orders_table.'.id',
@@ -274,7 +275,7 @@ class ReportsController extends Controller
             $orders_table.'.order_amount_inc_st as amount'
         )->get()->toArray();
 
-        $rows = array_merge($rows, $totals_row);
+        // $rows = array_merge($rows, $totals_row);
 
         return $rows;
 
