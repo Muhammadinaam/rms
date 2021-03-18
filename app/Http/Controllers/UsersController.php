@@ -31,6 +31,12 @@ class UsersController extends Controller
                     'url'=> 'closing-accounts', 
                     'permission' => 'view-closing-accounts-list',
                 ],
+                [
+                    'name' => 'Price Groups', 
+                    'icon' => 'fa fa-money', 
+                    'url'=> 'price-groups', 
+                    'permission' => 'view-price-groups-list',
+                ],
             ]
         ],
         [

@@ -43,6 +43,8 @@ Route::group(['middleware'=>['auth:api']], function(){
     Route::put('closing-accounts/{id}', 'ClosingAccountController@update');
     Route::delete('closing-accounts/{id}', 'ClosingAccountController@destroy');
 
+    Route::resource('price-groups', 'PriceGroupController');
+
     Route::get('free_tables', 'TablesController@freeTables');
 
     Route::get('items', 'ItemsController@index');
