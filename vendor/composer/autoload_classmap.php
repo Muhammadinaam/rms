@@ -18,6 +18,7 @@ return array(
     'App\\Http\\Controllers\\HomeController' => $baseDir . '/app/Http/Controllers/HomeController.php',
     'App\\Http\\Controllers\\ItemsController' => $baseDir . '/app/Http/Controllers/ItemsController.php',
     'App\\Http\\Controllers\\OrdersController' => $baseDir . '/app/Http/Controllers/OrdersController.php',
+    'App\\Http\\Controllers\\PriceGroupController' => $baseDir . '/app/Http/Controllers/PriceGroupController.php',
     'App\\Http\\Controllers\\RatingsController' => $baseDir . '/app/Http/Controllers/RatingsController.php',
     'App\\Http\\Controllers\\ReportsController' => $baseDir . '/app/Http/Controllers/ReportsController.php',
     'App\\Http\\Controllers\\SettingsController' => $baseDir . '/app/Http/Controllers/SettingsController.php',

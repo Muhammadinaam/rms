@@ -422,6 +422,7 @@ class ComposerStaticInit7ac04f7383cfe112d45b09337bb6441a
         'App\\Http\\Controllers\\HomeController' => __DIR__ . '/../..' . '/app/Http/Controllers/HomeController.php',
         'App\\Http\\Controllers\\ItemsController' => __DIR__ . '/../..' . '/app/Http/Controllers/ItemsController.php',
         'App\\Http\\Controllers\\OrdersController' => __DIR__ . '/../..' . '/app/Http/Controllers/OrdersController.php',
+        'App\\Http\\Controllers\\PriceGroupController' => __DIR__ . '/../..' . '/app/Http/Controllers/PriceGroupController.php',
         'App\\Http\\Controllers\\RatingsController' => __DIR__ . '/../..' . '/app/Http/Controllers/RatingsController.php',
         'App\\Http\\Controllers\\ReportsController' => __DIR__ . '/../..' . '/app/Http/Controllers/ReportsController.php',
         'App\\Http\\Controllers\\SettingsController' => __DIR__ . '/../..' . '/app/Http/Controllers/SettingsController.php',

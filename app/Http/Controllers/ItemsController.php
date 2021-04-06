@@ -14,8 +14,7 @@ class ItemsController extends Controller
 
     public function index()
     {
-        $items = Item::orderBy('code')
-                    ->orderBy('category');
+        $items = Item::orderBy('name');
 
         $show_inactive_also = request()->has('show_inactive_also') && request()->show_inactive_also == 1 ? true : false;
 

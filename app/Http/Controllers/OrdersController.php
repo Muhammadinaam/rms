@@ -126,6 +126,7 @@ class OrdersController extends Controller
                         'tos.order_type_id as order_type',
                         'tos.table_id as table',
                         'tos.cover',
+                        'tos.price_group_id',
                         'tables.name as table_name',
                         'tables.portion as table_portion',
                         'tos.deliver_to_name',
@@ -213,6 +214,8 @@ class OrdersController extends Controller
             }
 
             $order_data['order_type_id'] = $order['order_type'];
+            $order_data['price_group_id'] = $order['price_group_id'];
+
             $order_data['cover'] = isset($order['cover']) ? $order['cover'] : null;
 
             
@@ -762,6 +765,7 @@ class OrdersController extends Controller
         unset($to['cancellation_remarks']);
         unset($to['created_by']);
         unset($to['updated_by']);
+        unset($to['price_group_id']);
         
 
         $to['order_id'] = $order_id;
