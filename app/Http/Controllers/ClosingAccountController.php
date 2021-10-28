@@ -56,6 +56,7 @@ class ClosingAccountController extends Controller
             $model->sales_tax_rate = request()->sales_tax_rate;
             $model->show_amount_received_input = request()->show_amount_received_input;
             $model->additional_information_fields = request()->additional_information_fields;
+            $model->show_on_print_for_customer = request()->show_on_print_for_customer;
 
             $model->save();
 
