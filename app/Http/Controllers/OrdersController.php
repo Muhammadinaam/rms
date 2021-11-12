@@ -571,10 +571,12 @@ class OrdersController extends Controller
     {
         $order_id = request()->order_id;
         $received_through = request()->received_through;
+        $closing_account = \DB::table('closing_accounts')->where('name', $received_through)->first();
+        $sales_tax_rate = 0;
+        if ($closing_account) {
+            $sales_tax_rate = $closing_account->sales_tax_rate;
+        }
         
-
-
-
         try {
             DB::beginTransaction();
 
@@ -584,6 +586,8 @@ class OrdersController extends Controller
             $tos_update_data['received_by'] = Auth::user()->id;
             $tos_update_data['received_at'] = \Carbon\Carbon::now()->format('Y-m-d H:i:s');
             $tos_update_data['ent_remarks'] = request()->ent_remarks == '' ? null : request()->ent_remarks;
+
+            $this->updateSalesTaxRate($order_id, $sales_tax_rate);
 
             DB::table('tos')
                 ->where('id', $order_id)
